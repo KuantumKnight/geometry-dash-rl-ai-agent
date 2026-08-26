@@ -717,6 +717,10 @@ Reset and step info now expose the current/previous canonical states, transition
 
 `step()` now checks the canonical state before rate limiting or dispatching input. Transition, reset, and error states fail closed with an explicit state name; an offline test confirms no jump reaches the platform backend.
 
+## 2026-08-26 — Guarded reset input by state
+
+`reset()` now validates the canonical state before any retry click. Active gameplay and transition states cannot generate a reset input; only disconnected/menu/results/completion/error states enter reset orchestration.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

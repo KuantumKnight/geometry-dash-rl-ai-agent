@@ -271,6 +271,18 @@ class GeometryDashEnv(gym.Env):
     ) -> tuple[np.ndarray, dict[str, object]]:
         """Start or retry an episode and return the first pixel observation."""
 
+        resettable_states = {
+            ScreenState.DISCONNECTED,
+            ScreenState.MAIN_MENU,
+            ScreenState.RESULTS,
+            ScreenState.LEVEL_COMPLETE,
+            ScreenState.ERROR,
+        }
+        if self._state_machine.state not in resettable_states:
+            raise RuntimeError(
+                "Reset input is suppressed until a resettable state is validated "
+                f"(screen_state={self._state_machine.state.value})"
+            )
         super().reset(seed=seed)
         self._state_machine = StateMachine()
         self._state_machine.start(

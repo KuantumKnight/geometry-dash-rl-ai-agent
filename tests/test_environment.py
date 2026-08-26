@@ -224,6 +224,17 @@ class EnvironmentTests(unittest.TestCase):
 
         self.assertEqual(self.platform.jump_calls, [])
 
+    def test_reset_input_is_suppressed_from_active_gameplay(self) -> None:
+        """Reset cannot click while a gameplay episode is still active."""
+
+        env = self.make_env()
+        self.activate(env)
+
+        with self.assertRaisesRegex(RuntimeError, "resettable state"):
+            env.reset()
+
+        self.assertEqual(self.platform.click_calls, [])
+
     def test_death_detector_recognizes_results_and_rejects_gameplay(self) -> None:
         self.assertTrue(is_death_screen(results_image()))
         self.assertFalse(is_death_screen(GAMEPLAY_IMAGE))
