@@ -1,0 +1,66 @@
+name: Offline quality
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows / Python ${{ matrix.python-version }}
+    runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.11.24"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install locked dependencies
+        run: uv sync --locked --dev --python "${{ matrix.python-version }}"
+
+      - name: Confirm no proprietary game files are present
+        shell: pwsh
+        run: |
+          if (Test-Path -LiteralPath "Geometry Dash") {
+            throw "CI must never contain or require the proprietary game installation."
+          }
+
+      - name: Check formatting
+        run: uv run ruff format --check src tests tools
+
+      - name: Lint
+        run: uv run ruff check src tests tools
+
+      - name: Type check
+        run: uv run pyright
+
+      - name: Run offline tests with coverage
+        run: |
+          uv run coverage run -m unittest discover -s tests -v
+          uv run coverage report
+
+      - name: Build package
+        run: uv run python -m build

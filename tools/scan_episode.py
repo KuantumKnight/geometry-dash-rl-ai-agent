@@ -7,10 +7,7 @@ from pathlib import Path
 
 from PIL import Image
 
-try:
-    from .game_state import is_death_screen
-except ImportError:  # Direct execution: `py tools\\scan_episode.py`.
-    from game_state import is_death_screen
+from geometry_dash_env.game_state import is_death_screen
 
 
 def main() -> None:

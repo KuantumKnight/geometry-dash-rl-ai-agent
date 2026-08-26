@@ -1,0 +1,8 @@
+{
+  "include": ["src", "tests", "tools"],
+  "exclude": [".venv", "build", "dist", "artifacts"],
+  "typeCheckingMode": "basic",
+  "pythonVersion": "3.13",
+  "venvPath": ".",
+  "venv": ".venv"
+}

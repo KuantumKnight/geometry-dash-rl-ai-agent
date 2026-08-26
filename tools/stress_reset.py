@@ -3,14 +3,8 @@
 from __future__ import annotations
 
 import argparse
-import sys
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-from src.geometry_dash_env import GeometryDashEnv  # noqa: E402
+from geometry_dash_env import GeometryDashEnv
 
 
 def parse_args() -> argparse.Namespace:
@@ -46,7 +40,7 @@ def main() -> None:
             reset_attempts += 1
             try:
                 env.reset()
-            except Exception as exc:  # noqa: BLE001 - report every unattended failure.
+            except Exception as exc:
                 reset_failures += 1
                 print(f"reset_failure={reset_failures} error={exc}")
                 break

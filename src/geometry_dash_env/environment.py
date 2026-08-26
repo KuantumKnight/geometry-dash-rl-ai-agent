@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from collections import deque
 import time
-from pathlib import Path
+from collections import deque
+from typing import ClassVar
 
 import gymnasium as gym
 import numpy as np
 from mss import MSS
 from PIL import Image
 
-from tools.capture_action import (
+from .game_state import classify_screen, is_death_screen, results_progress_ratio
+from .platform_control import (
     GAME_PATH,
     click_client,
     find_game_window,
@@ -19,7 +20,6 @@ from tools.capture_action import (
     game_client_bbox,
     send_jump,
 )
-from tools.game_state import classify_screen, is_death_screen, results_progress_ratio
 
 
 class GeometryDashEnv(gym.Env):
@@ -33,7 +33,7 @@ class GeometryDashEnv(gym.Env):
     when the results screen is detected. Progress-based reward comes later.
     """
 
-    metadata = {"render_modes": []}
+    metadata: ClassVar[dict[str, list[str]]] = {"render_modes": []}
 
     def __init__(
         self,
@@ -50,7 +50,9 @@ class GeometryDashEnv(gym.Env):
         if observation_size[0] <= 0 or observation_size[1] <= 0:
             raise ValueError("observation_size dimensions must be positive")
         if fps <= 0 or frame_skip <= 0 or frame_stack <= 0 or max_steps <= 0:
-            raise ValueError("fps, frame_skip, frame_stack, and max_steps must be positive")
+            raise ValueError(
+                "fps, frame_skip, frame_stack, and max_steps must be positive"
+            )
         if reset_timeout <= 0 or reset_settle < 0 or reset_stable_frames <= 0:
             raise ValueError(
                 "reset_timeout must be positive, reset_settle cannot be negative, "
@@ -90,7 +92,9 @@ class GeometryDashEnv(gym.Env):
             raise FileNotFoundError(f"Geometry Dash executable not found: {GAME_PATH}")
         self._hwnd = find_game_window()
         if self._hwnd is None:
-            raise RuntimeError("No visible Geometry Dash window found. Start the game first.")
+            raise RuntimeError(
+                "No visible Geometry Dash window found. Start the game first."
+            )
         focus_window(self._hwnd)
         self._bbox = game_client_bbox(self._hwnd)
 
@@ -140,7 +144,8 @@ class GeometryDashEnv(gym.Env):
             last_state = classify_screen(image)
             if last_state == "main_menu":
                 raise RuntimeError(
-                    "Reset encountered the main menu; enter the target level before retrying."
+                    "Reset encountered the main menu; enter the target level "
+                    "before retrying."
                 )
             if last_state == "gameplay_or_transition":
                 stable_frames += 1
@@ -172,10 +177,13 @@ class GeometryDashEnv(gym.Env):
 
         super().reset(seed=seed)
         self._ensure_window()
+        hwnd = self._hwnd
+        if hwnd is None:
+            raise RuntimeError("Geometry Dash window disappeared during reset")
         image = self._capture()
         screen_state = classify_screen(image)
         if screen_state == "results":
-            click_client(self._hwnd)
+            click_client(hwnd)
             time.sleep(self.reset_settle)
             image = self._wait_for_ready_gameplay()
         elif screen_state == "gameplay_or_transition":
@@ -203,13 +211,14 @@ class GeometryDashEnv(gym.Env):
 
         if not self._episode_active or self._hwnd is None:
             raise RuntimeError("Call reset() before step()")
+        hwnd = self._hwnd
         if not self.action_space.contains(action):
             raise ValueError("action must be 0 (no-op) or 1 (jump)")
         action = int(action)
 
         if action == 1:
-            send_jump(self._hwnd)
-        image = None
+            send_jump(hwnd)
+        image: Image.Image | None = None
         terminated = False
         frames_elapsed = 0
         frame_deadline = time.perf_counter() + self.frame_interval
@@ -222,17 +231,30 @@ class GeometryDashEnv(gym.Env):
                 break
             frame_deadline += self.frame_interval
 
+        if image is None:
+            raise RuntimeError("No frame was captured during the environment step")
+
         self._step_count += 1
         truncated = not terminated and self._step_count >= self.max_steps
         if terminated or truncated:
             self._episode_active = False
         progress_ratio = results_progress_ratio(image) if terminated else None
-        reward = (-1.0 + progress_ratio) if terminated and progress_ratio is not None else 0.0
-        return self._observation(image), reward, terminated, truncated, {
-            "screen_state": "results" if terminated else "gameplay_or_transition",
-            "frames_elapsed": frames_elapsed,
-            "decision_step": self._step_count,
-            "truncated": truncated,
-            "progress_ratio": progress_ratio,
-            "capture_bbox": self._bbox,
-        }
+        reward = (
+            (-1.0 + progress_ratio)
+            if terminated and progress_ratio is not None
+            else 0.0
+        )
+        return (
+            self._observation(image),
+            reward,
+            terminated,
+            truncated,
+            {
+                "screen_state": "results" if terminated else "gameplay_or_transition",
+                "frames_elapsed": frames_elapsed,
+                "decision_step": self._step_count,
+                "truncated": truncated,
+                "progress_ratio": progress_ratio,
+                "capture_bbox": self._bbox,
+            },
+        )

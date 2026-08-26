@@ -1,7 +1,7 @@
 # Geometry Dash Screen-State Map
 
-Source episode: `artifacts/episodes/20260826T113120Z`  
-Capture rate: 60 FPS video with 5 FPS PNG samples  
+Source episode: `artifacts/episodes/20260826T113120Z`
+Capture rate: 60 FPS video with 5 FPS PNG samples
 Level shown: Stereo Madness
 
 The frame ranges below use the sampled PNG indices. Each sampled frame is approximately 0.2 seconds apart, so the boundaries are approximate.

@@ -11,22 +11,18 @@ import json
 import shutil
 import subprocess
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-from PIL import Image
 from mss import MSS
+from PIL import Image
 
-try:
-    from .capture_action import (
-        GAME_PATH,
-        find_game_window,
-        focus_window,
-        game_client_bbox,
-    )
-except ImportError:  # Direct execution: `py tools\\record_frames.py`.
-    from capture_action import GAME_PATH, find_game_window, focus_window, game_client_bbox
-
+from geometry_dash_env.platform_control import (
+    GAME_PATH,
+    find_game_window,
+    focus_window,
+    game_client_bbox,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = PROJECT_ROOT / "artifacts" / "episodes"
@@ -187,10 +183,12 @@ def main() -> None:
     print("Searching for the running Geometry Dash window...")
     hwnd = find_game_window()
     if hwnd is None:
-        raise RuntimeError("No visible Geometry Dash window found. Start the game first.")
+        raise RuntimeError(
+            "No visible Geometry Dash window found. Start the game first."
+        )
     focus_window(hwnd)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     episode_dir = args.output_dir / timestamp
     episode_dir.mkdir(parents=True, exist_ok=True)
     bbox = game_client_bbox(hwnd)
@@ -201,7 +199,11 @@ def main() -> None:
     deadline = recording_started + args.seconds
     frame_count = 0
     png_every = max(1, round(args.fps / args.png_fps))
-    video = None if args.no_video else start_video_encoder(episode_dir, args.fps, width, height)
+    video = (
+        None
+        if args.no_video
+        else start_video_encoder(episode_dir, args.fps, width, height)
+    )
 
     print(f"Recording {args.seconds:g}s at approximately {args.fps:g} FPS.")
     print(f"Saving PNG samples at approximately {args.png_fps:g} FPS.")
@@ -222,7 +224,9 @@ def main() -> None:
                 Image.frombytes("RGB", shot.size, shot.rgb).save(frame_path)
 
             frame_count += 1
-            sleep_for = interval - (time.monotonic() - recording_started - (frame_count - 1) * interval)
+            sleep_for = interval - (
+                time.monotonic() - recording_started - (frame_count - 1) * interval
+            )
             if sleep_for > 0:
                 time.sleep(sleep_for)
 

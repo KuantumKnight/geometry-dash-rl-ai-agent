@@ -8,28 +8,25 @@ from __future__ import annotations
 
 import argparse
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from mss import MSS
 from PIL import Image
 
-try:
-    from .capture_action import (
-        GAME_PATH,
-        find_game_window,
-        focus_window,
-        game_client_bbox,
-        click_client,
-    )
-    from .game_state import is_death_screen
-except ImportError:  # Direct execution: `py tools\\reset_episode.py`.
-    from capture_action import GAME_PATH, find_game_window, focus_window, game_client_bbox, click_client
-    from game_state import is_death_screen
-
+from geometry_dash_env.game_state import is_death_screen
+from geometry_dash_env.platform_control import (
+    GAME_PATH,
+    click_client,
+    find_game_window,
+    focus_window,
+    game_client_bbox,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = PROJECT_ROOT / "artifacts" / "reset_checks"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -70,11 +67,13 @@ def main() -> None:
 
     hwnd = find_game_window()
     if hwnd is None:
-        raise RuntimeError("No visible Geometry Dash window found. Start the game first.")
+        raise RuntimeError(
+            "No visible Geometry Dash window found. Start the game first."
+        )
     focus_window(hwnd)
     bbox = game_client_bbox(hwnd)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     output_dir = args.output_dir / timestamp
     output_dir.mkdir(parents=True, exist_ok=True)
 

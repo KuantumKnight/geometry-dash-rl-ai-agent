@@ -504,3 +504,67 @@ periodic        10         0.009          0.011      10.400      100.0%         
 ```
 
 Random actions were strongest, reaching 4.8% best terminal progress and 1.9% average terminal progress. All policies died in every episode, and all reset attempts succeeded. Future RL comparisons must use this same protocol and beat these measurements. This routine baseline run produced no new montage-worthy video; the media archive remains active for future milestones.
+
+## 2026-08-26 — Made learning proof and media evidence first-class deliverables
+
+### Decision
+
+The project now has three equal outcomes: build a credible RL agent, learn and explain the RL concepts used to build it, and preserve authentic footage for a future technical montage. A technical milestone alone is no longer the complete project story.
+
+### Learning evidence
+
+Added `docs/learning/README.md` with a just-in-time curriculum from MDP/POMDP framing through returns, Bellman reasoning, exploration, tabular Q-learning, pixel representations, DQN, PPO trade-offs, training discipline, and multi-seed evaluation. A module counts as learned only when it contains an own-word explanation, a pre-run prediction, an exercise or implementation, measured evidence, a reflection, a Geometry Dash connection, and an assistance disclosure.
+
+The curriculum is a plan, not a retroactive claim of mastery. Its modules remain incomplete until the learner creates and reviews the required evidence.
+
+### Media evidence
+
+Added `docs/montage-plan.md` with a planned M00–M22 shot list and triggers for irreplaceable moments such as the first correct reward trace, first learning signal, first baseline-beating checkpoint, progress milestones, first completion, controlled failure/fix, and final held-out comparison. Upgraded `docs/media-log.md` into a catalog of footage that actually exists, including checksum, backup, privacy, rights, and evidence-link requirements.
+
+The existing `20260826T113120Z` state-flow recording remains a candidate. Its SHA-256 is now recorded in the media log, but it is not considered safely preserved until a second backup and the privacy/rights reviews are recorded.
+
+## 2026-08-26 — Started L0: Geometry Dash as an MDP/POMDP
+
+Created `docs/learning/00-geometry-dash-as-an-mdp.md` as a guided worksheet. Verified code facts are prefilled, but all explanations, the temporal-observation prediction, the transition example, comprehension answers, and later reflection remain explicitly assigned to the learner.
+
+L0 is not marked complete. The next verification pause is a review of the learner's own answers about the agent, environment, state versus observation, and one-frame versus frame-stack prediction.
+
+## 2026-08-26 — Deferred L0 and started reproducible development setup
+
+The learner chose to postpone the MDP/POMDP worksheet and start implementation work. L0 remains explicitly incomplete and is marked deferred rather than silently treated as learned.
+
+### Packaging decision
+
+Added `pyproject.toml`, `.python-version`, and `uv.lock`. ADR 0002 selects `uv`, pins the default interpreter to Python 3.13, declares support for Python `>=3.12,<3.14`, and keeps future training dependencies out of the environment until algorithm selection.
+
+Removed `requirements.txt` so dependencies cannot drift across two sources of truth. The original broken Python 3.11 environment was not deleted; after stopping the verified VS Code Jedi process holding it open, it was moved to the ignored `.venv-broken-20260826` recovery directory. `uv sync --dev` then created a clean Python 3.13.14 `.venv`.
+
+### Package boundary refactor
+
+Moved screen-state detection and Windows control into `src/geometry_dash_env`. The library no longer imports runtime implementation from the top-level `tools` package, tests and scripts now import `geometry_dash_env`, and compatibility tool modules keep existing commands usable.
+
+### Verification and regression
+
+The first clean-environment test run exposed one stale mock path in the bbox test. Because the mock still targeted `src.geometry_dash_env`, the test called the real Win32 function with fake handle `123` and failed with `WinError 1400`. Updating the mock to the installed package path fixed the regression.
+
+Final results:
+
+```text
+Python:                 3.13.14
+Locked packages:        12
+Dependency check:       compatible
+Offline tests:          10 passed
+Source distribution:    built
+Wheel:                  built
+Isolated wheel import:  passed
+Capture tool --help:    passed
+Baseline tool --help:   passed
+```
+
+## 2026-08-26 — Added pinned offline quality gates and Windows CI
+
+Pinned Ruff 0.16.4, Pyright 1.1.411, Coverage.py 7.15.4, and pre-commit 4.6.2 in the development dependency group. Added `pyrightconfig.json`, `.pre-commit-config.yaml`, and branch-aware coverage configuration with a 60% floor for testable package logic; the Win32 input module is excluded because it requires a live desktop.
+
+Added `.github/workflows/quality.yml`, a Windows matrix for the explicitly supported Python 3.12 and 3.13 interpreters. The workflow installs from `uv.lock`, runs formatting, linting, type checking, offline tests with coverage, and package build as separate steps, and asserts that no proprietary Geometry Dash directory is present.
+
+The first pre-commit run fixed trailing whitespace in two pre-existing documentation files. After that cleanup, pre-commit passed. A new nullable-window guard briefly broke two reset tests whose mocks did not model `_ensure_window()`; the tests were corrected to provide a fake handle, and the full test suite passed again.
