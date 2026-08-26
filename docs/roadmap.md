@@ -269,7 +269,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Detect client-area changes and terminate the active episode with the previous/current bounding boxes and a reset-required reason.
 - [ ] P0 — Decide whether moving/resizing the window mid-episode is supported; test the chosen behavior.
 - [ ] P0 — Expose capture/input backends through dependency injection for offline tests.
-- [ ] P0 — Add an emergency-stop mechanism and document the key combination.
+- [x] VERIFIED — Add the thread-safe `EmergencyStop` latch and document the host binding (`Ctrl+Shift+F12`) required for live sessions.
 - [x] VERIFIED — Add configurable `max_action_rate` throttling so a control bug cannot flood input indefinitely.
 - [x] VERIFIED — Restore the user's cursor in a `finally` block after normalized reset clicks; cursor movement remains isolated to the reset operation.
 - [ ] P0 — Prefer a reset input that does not depend on hard-coded screen coordinates; otherwise calibrate and validate normalized coordinates.

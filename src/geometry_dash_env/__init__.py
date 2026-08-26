@@ -1,5 +1,5 @@
 """Minimal pixel-based Geometry Dash environment interface."""
 
-from .environment import GeometryDashEnv
+from .environment import EmergencyStop, GeometryDashEnv
 
-__all__ = ["GeometryDashEnv"]
+__all__ = ["EmergencyStop", "GeometryDashEnv"]

@@ -693,6 +693,10 @@ Each environment step now passes through an optional `max_action_rate` limiter (
 
 The normalized retry click now snapshots the cursor position and restores it even if mouse dispatch raises. A mocked Win32 test verifies both the click and restoration coordinates.
 
+## 2026-08-26 — Added an explicit emergency stop
+
+Live hosts can inject a thread-safe `EmergencyStop` latch and bind `Ctrl+Shift+F12` to its `request()` method. The environment checks the latch before action dispatch and on every frame boundary, halting without sending additional input.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

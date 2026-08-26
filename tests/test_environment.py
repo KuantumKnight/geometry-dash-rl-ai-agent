@@ -9,7 +9,7 @@ import gymnasium as gym
 import numpy as np
 from PIL import Image, ImageDraw
 
-from geometry_dash_env import GeometryDashEnv
+from geometry_dash_env import EmergencyStop, GeometryDashEnv
 from geometry_dash_env.game_state import is_death_screen
 
 GAMEPLAY_IMAGE = Image.new("RGB", (800, 600), (25, 40, 165))
@@ -190,6 +190,20 @@ class EnvironmentTests(unittest.TestCase):
 
         sleep.assert_called_once()
         self.assertAlmostEqual(sleep.call_args.args[0], 0.05, places=6)
+
+    def test_emergency_stop_suppresses_actions(self) -> None:
+        """An operator latch halts before any input dispatch."""
+
+        stop = EmergencyStop()
+        env = self.make_env(emergency_stop=stop)
+        self.activate(env)
+        stop.request()
+
+        with self.assertRaisesRegex(RuntimeError, "Emergency stop"):
+            env.step(1)
+
+        self.assertEqual(self.platform.jump_calls, [])
+        self.assertFalse(env._episode_active)
 
     def test_death_detector_recognizes_results_and_rejects_gameplay(self) -> None:
         self.assertTrue(is_death_screen(results_image()))

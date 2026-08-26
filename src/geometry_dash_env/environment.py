@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from collections import deque
+from threading import Event
 from typing import Any, ClassVar, Protocol, cast
 
 import gymnasium as gym
@@ -25,6 +26,31 @@ class CaptureBackend(Protocol):
     def close(self) -> None:
         """Release capture resources."""
         ...
+
+
+class EmergencyStop:
+    """Thread-safe latch for an operator-controlled episode stop."""
+
+    def __init__(self) -> None:
+        """Create a clear emergency-stop latch."""
+
+        self._event = Event()
+
+    def request(self) -> None:
+        """Request immediate suppression of future actions."""
+
+        self._event.set()
+
+    def clear(self) -> None:
+        """Clear the latch before starting a new controlled run."""
+
+        self._event.clear()
+
+    @property
+    def requested(self) -> bool:
+        """Return whether an operator has requested an emergency stop."""
+
+        return self._event.is_set()
 
 
 class GeometryDashEnv(gym.Env):
@@ -54,6 +80,7 @@ class GeometryDashEnv(gym.Env):
         focus_on_reset: bool = True,
         focus_on_action: bool = True,
         max_action_rate: float | None = 30.0,
+        emergency_stop: EmergencyStop | None = None,
         platform_backend: PlatformBackend | None = None,
         capture_backend: CaptureBackend | None = None,
     ) -> None:
@@ -83,6 +110,7 @@ class GeometryDashEnv(gym.Env):
         self.focus_on_reset = focus_on_reset
         self.focus_on_action = focus_on_action
         self.max_action_rate = max_action_rate
+        self.emergency_stop = emergency_stop or EmergencyStop()
         self._screen: CaptureBackend = cast(CaptureBackend, capture_backend or MSS())
         self._platform = platform_backend or Win32Platform()
         self._hwnd = None
@@ -212,6 +240,15 @@ class GeometryDashEnv(gym.Env):
                 time.sleep(remaining)
         self._last_action_time = time.monotonic()
 
+    def _check_emergency_stop(self) -> None:
+        """Stop the episode before dispatch if the operator latch is set."""
+
+        if self.emergency_stop.requested:
+            self._episode_active = False
+            raise RuntimeError(
+                "Emergency stop requested; episode halted and input suppressed"
+            )
+
     def reset(
         self,
         *,
@@ -262,6 +299,7 @@ class GeometryDashEnv(gym.Env):
             raise ValueError("action must be 0 (no-op) or 1 (jump)")
         action = int(action)
 
+        self._check_emergency_stop()
         self._enforce_action_rate()
         if action == 1:
             self._platform.send_jump(hwnd, ensure_focus=self.focus_on_action)
@@ -270,6 +308,7 @@ class GeometryDashEnv(gym.Env):
         frames_elapsed = 0
         frame_deadline = time.perf_counter() + self.frame_interval
         for _ in range(self.frame_skip):
+            self._check_emergency_stop()
             self._wait_for_frame_deadline(frame_deadline)
             image = self._capture()
             frames_elapsed += 1
