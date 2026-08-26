@@ -130,3 +130,13 @@ The latest 20-second episode contains the complete control flow from main menu t
 Only `GAMEPLAY` should be exposed as a learning observation. Menu, level-info, attempt-intro, death-animation, and results screens belong to the environment controller and should not be mixed into the policy’s training data.
 
 See [screen-state-map.md](screen-state-map.md) for the sampled frame ranges and proposed state flow.
+
+## 2026-08-26 — Guarded reset controller
+
+### Implementation
+
+Added `tools/reset_episode.py`. It only sends `R` after the current frame is classified as `RESULTS`, waits for the results overlay to clear, and saves before/after verification frames.
+
+### Not yet validated
+
+The controller has passed static checks but still needs a live test from a real results screen. The reset checklist remains open until the after-reset frame is confirmed as the next attempt and subsequent gameplay.
