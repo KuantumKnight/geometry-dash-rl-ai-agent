@@ -10,6 +10,7 @@ This review is run before a refactor removes or consolidates code. The goal is t
 - [x] `tools/benchmark_detector_offline.py` intentionally retains the old pixel-loop detector so the NumPy rewrite can be compared for equivalence and speed.
 - [x] No generated artifacts, local game files, or `.venv` content are imported by package code.
 - [x] The top-level tools are still used as public command surfaces and are not dead scripts.
+- [x] Current reset messages say “clicking retry”; the earlier “pressing R” wording remains only in the chronological learning log as historical context.
 - [ ] Run a dedicated dead-code scanner after the package API and training modules stabilize; early scanner output would misclassify compatibility and future entrypoints.
 
 ## Refactor rule

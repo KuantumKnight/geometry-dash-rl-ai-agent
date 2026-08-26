@@ -637,6 +637,10 @@ Added `docs/docstring-policy.md` and enabled Ruff `D102`/`D107` checks for publi
 
 Added `docs/quality-review.md`. The review records Ruff unused-name checks, the single package implementation path, the intentional compatibility re-export, the retained legacy detector used for equivalence benchmarking, and the rule that apparently unused code must be checked against CLI, benchmark, and evidence roles before removal.
 
+## 2026-08-26 — Corrected the stale reset timeout message
+
+Updated `tools/reset_episode.py` so a timeout reports that the results screen did not clear after clicking retry, matching the implementation. The earlier “pressing R” sentence remains in the learning log only as a historical account of the first reset attempt and the later fix.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

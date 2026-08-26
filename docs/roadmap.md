@@ -177,7 +177,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Add a pre-commit configuration for formatting, linting, whitespace, YAML/TOML validation, and secret detection.
 - [x] VERIFIED — Add a branch-aware coverage report with a 60% floor for offline-testable core logic.
 - [x] VERIFIED — Add `docs/quality-review.md` with dead-code, duplicate-code, compatibility, benchmark, and generated-artifact review gates.
-- [ ] P0 — Remove stale comments and messages, including reset text that says “pressing R” when the implementation clicks the retry control.
+- [x] VERIFIED — Remove the stale live reset message that said “pressing R”; current timeout text matches the implemented retry click, while historical learning-log wording remains clearly chronological.
 
 ### 0.5 Add continuous integration
 
