@@ -126,15 +126,15 @@ Version 1 is complete only when all statements below are true.
 
 ### 0.1 Preserve the current evidence before refactoring
 
-- [ ] P0 — Tag or branch the current prototype state so later regressions can be compared against commit `8d4e496`.
-- [ ] P0 — Record the exact Windows edition/build, CPU, GPU, RAM, display scaling, monitor layout, and refresh rate used for live measurements.
-- [ ] P0 — Record the exact Python version used by the successful current tests (`3.13.14` during this audit).
+- [x] VERIFIED — Tag `prototype-baseline-8d4e496` preserves the pre-refactor prototype at commit `8d4e496` for regression comparisons.
+- [x] VERIFIED — Record the Windows edition/build, CPU, GPU, RAM, display scaling, monitor layout, refresh rate, and provenance limits in `docs/experiment-environment.md`.
+- [x] VERIFIED — Record CPython `3.13.14`, used by the successful locked test run, in `docs/experiment-environment.md`.
 - [ ] P0 — Record the Geometry Dash version from the in-game UI or store; the executable exposes no usable version metadata.
 - [ ] P0 — Record window mode, client resolution, VSync/FPS settings, level, character mode, and game speed.
-- [ ] P0 — Record `ffmpeg` version and whether video encoding was enabled for benchmark runs.
-- [ ] P0 — Export a dependency snapshot only as historical evidence; do not treat the global environment as the new lock file.
-- [ ] P0 — Back up the selected local media outside `artifacts/` before any cleanup.
-- [ ] P0 — Add checksums for milestone videos and metadata so archived evidence can be verified later.
+- [x] VERIFIED — Record `ffmpeg 8.1.1-full_build-www.gyan.dev` and video-encoding provenance in `docs/experiment-environment.md`; the episode recorder encoded H.264 while benchmarks do not encode video.
+- [x] VERIFIED — Export `docs/dependency-snapshot-20260826.txt` as historical evidence; `uv.lock` remains the dependency source of truth.
+- [x] VERIFIED — Back up the selected state-flow video to ignored `media-backups/20260826T113120Z/` outside `artifacts/` before cleanup.
+- [x] VERIFIED — Add `docs/media-checksums.sha256` for the milestone video, sidecar metadata, and identical local backup.
 
 ### 0.2 Rebuild Python project metadata
 
@@ -148,6 +148,8 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Configure the `src` layout so imports use `geometry_dash_env`, never `src.geometry_dash_env`.
 - [x] VERIFIED — Remove library imports from `tools`; move Windows control and screen detection under `src/geometry_dash_env`.
 - [ ] P0 — Add supported command-line entry points for capture, benchmark, baseline, train, evaluate, and record operations.
+
+> Evidence note (2026-08-26): `docs/command-surface.md` inventories the implemented capture, benchmark, baseline, and record commands. `train` and `evaluate` remain intentionally absent until the learning protocol exists.
 - [x] VERIFIED — Recreate `.venv` from the lock file with Python 3.13.14.
 - [x] VERIFIED — Verify dependency consistency with `uv pip check`.
 - [x] VERIFIED — Verify `uv run python -c "import geometry_dash_env"` works from the project environment.
@@ -156,12 +158,14 @@ Version 1 is complete only when all statements below are true.
 
 ### 0.3 Add a repeatable developer command surface
 
-- [ ] P0 — Choose a Windows-friendly task runner or document equivalent PowerShell commands.
-- [ ] P0 — Add commands for `setup`, `format`, `lint`, `typecheck`, `test`, `test-offline`, `test-live`, `benchmark`, `train`, and `evaluate`.
-- [ ] P0 — Ensure offline commands never require the game executable or a running game window.
-- [ ] P0 — Ensure live commands fail with a short actionable message when Windows, the game path, or the game window is unavailable.
-- [ ] P0 — Add `--help` examples and validate every public CLI's exit codes.
+- [x] VERIFIED — Choose `uv` as the Windows-friendly task runner and document the canonical PowerShell commands in `docs/developer-commands.md`.
+- [x] VERIFIED — Add `scripts/dev.ps1` commands for `setup`, `format`, `lint`, `typecheck`, `test`, `test-offline`, `test-live`, `benchmark`, `train`, and `evaluate`; future train/evaluate tasks fail closed with exit code 2 until implemented.
+- [x] VERIFIED — Prove offline CLI help works with a deliberately missing `GEOMETRY_DASH_EXE`; `tests/test_offline_cli.py` covers episode scan and detector benchmark paths.
+- [x] VERIFIED — Test that a live capture command fails before input with an actionable missing-executable message in `tests/test_live_cli_contract.py`.
+- [x] VERIFIED — Add `--help` examples and test help/invalid-option exit codes for all ten public tools in `tests/test_cli_help.py`.
 - [ ] P1 — Add shell completion only after CLI names and flags stabilize.
+
+> Decision (2026-08-26): shell completion remains deferred; `scripts/dev.ps1` `ValidateSet` is authoritative while train/evaluate and their flags are provisional.
 
 ### 0.4 Add code-quality gates
 
@@ -169,22 +173,22 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Configure deterministic formatting.
 - [x] VERIFIED — Configure lint rules, with narrow documented ignores instead of file-wide suppression.
 - [x] VERIFIED — Configure type checking for package code first, then tools and tests.
-- [ ] P0 — Add docstring requirements for public APIs and CLI entry points.
+- [x] VERIFIED — Add Ruff missing-docstring checks for public package methods plus the written API/CLI policy in `docs/docstring-policy.md`.
 - [x] VERIFIED — Add a pre-commit configuration for formatting, linting, whitespace, YAML/TOML validation, and secret detection.
 - [x] VERIFIED — Add a branch-aware coverage report with a 60% floor for offline-testable core logic.
-- [ ] P0 — Add dead-code and duplicate-code review to the refactor checklist.
-- [ ] P0 — Remove stale comments and messages, including reset text that says “pressing R” when the implementation clicks the retry control.
+- [x] VERIFIED — Add `docs/quality-review.md` with dead-code, duplicate-code, compatibility, benchmark, and generated-artifact review gates.
+- [x] VERIFIED — Remove the stale live reset message that said “pressing R”; current timeout text matches the implemented retry click, while historical learning-log wording remains clearly chronological.
 
 ### 0.5 Add continuous integration
 
 - [x] VERIFIED — Add a Windows GitHub Actions workflow for clean installation and offline tests.
 - [x] VERIFIED — Add formatting, linting, type checking, unit tests, and package build as separate visible CI steps.
 - [x] VERIFIED — Cache dependencies without caching the project environment itself.
-- [ ] P0 — Upload test and coverage reports on failure.
+- [x] VERIFIED — Configure CI to upload verbose test output, Coverage.py XML, and raw coverage data when a Windows quality job fails.
 - [x] VERIFIED — Run a matrix only for explicitly supported Python versions (3.12 and 3.13).
 - [x] VERIFIED — Prove CI never looks for or downloads Geometry Dash.
 - [x] VERIFIED — Keep live-game tests out of the default offline test discovery.
-- [ ] P0 — Add a scheduled dependency/security audit with actionable failure behavior.
+- [x] VERIFIED — Add a scheduled dependency/security audit with actionable failure behavior using the locked dev environment and `pip-audit --strict`.
 - [ ] P1 — Add a lightweight Linux job for offline modules only after Win32 imports are properly isolated.
 - [ ] P1 — Add branch protection instructions requiring the core CI checks.
 

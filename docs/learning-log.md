@@ -568,3 +568,87 @@ Pinned Ruff 0.16.4, Pyright 1.1.411, Coverage.py 7.15.4, and pre-commit 4.6.2 in
 Added `.github/workflows/quality.yml`, a Windows matrix for the explicitly supported Python 3.12 and 3.13 interpreters. The workflow installs from `uv.lock`, runs formatting, linting, type checking, offline tests with coverage, and package build as separate steps, and asserts that no proprietary Geometry Dash directory is present.
 
 The first pre-commit run fixed trailing whitespace in two pre-existing documentation files. After that cleanup, pre-commit passed. A new nullable-window guard briefly broke two reset tests whose mocks did not model `_ensure_window()`; the tests were corrected to provide a fake handle, and the full test suite passed again.
+
+## 2026-08-26 — Preserved the pre-refactor prototype baseline
+
+Created the annotated tag `prototype-baseline-8d4e496` at commit `8d4e496` (`baseline: add non-learning policy comparison`). The tag is the fixed comparison point for packaging, quality-gate, and future environment-hardening changes; it contains no later refactor or CI files.
+
+## 2026-08-26 — Recorded the live experiment host fingerprint
+
+Added `docs/experiment-environment.md` with the observed Windows edition/build, CPU, GPUs and driver versions, installed RAM, active display, 150% scaling, 2560×1600/240 Hz display mode, and current 800×600 Geometry Dash client capture. The document explicitly distinguishes current-host evidence from historical-run equivalence and leaves unrecoverable in-game settings open rather than guessing.
+
+## 2026-08-26 — Recorded the locked test interpreter
+
+Added CPython `3.13.14` to the experiment fingerprint. This is the interpreter used by `uv run` for the successful 10-test run and package checks; the supported project range remains `>=3.12,<3.14`.
+
+## 2026-08-26 — Documented the unrecoverable Geometry Dash version
+
+The local `GeometryDash.exe` has no usable Windows version-resource fields, and no standard Steam app manifest was present. The running process and executable path are confirmed, but an exact game release cannot be inferred responsibly. The roadmap item remains open until an in-game UI or store-version capture is recorded.
+
+## 2026-08-26 — Recorded the live level while preserving settings uncertainty
+
+A focused screenshot confirmed `Stereo Madness`, an `800×600` client capture, `Attempt 305`, and a `1%` results state. Window mode, VSync/FPS, character mode, and game speed were not visible or recoverable, so `docs/experiment-environment.md` records them as open evidence gaps rather than treating the Python controller's 60 FPS target as a game setting.
+
+## 2026-08-26 — Recorded video encoder provenance
+
+Recorded `ffmpeg 8.1.1-full_build-www.gyan.dev` and verified the candidate episode as a 20-second, 1,200-frame H.264 MP4 at 800×600 and 60 FPS. Encoding was enabled for the recorder run; benchmark commands remain non-video measurements.
+
+## 2026-08-26 — Backed up the selected state-flow video
+
+Copied `artifacts/episodes/20260826T113120Z/episode.mp4` to the ignored local path `media-backups/20260826T113120Z/episode.mp4` before cleanup. The source and backup are both 1,082,879 bytes and have matching SHA-256 hashes; metadata and selected PNG evidence still need separate preservation work.
+
+## 2026-08-26 — Added a machine-readable media checksum manifest
+
+Added `docs/media-checksums.sha256` with hashes for the source MP4, its `metadata.json` sidecar, and the ignored backup copy. The source and backup hashes match exactly; the metadata hash is recorded separately so later edits are detectable.
+
+## 2026-08-26 — Documented the implemented command surface
+
+Added `docs/command-surface.md` and linked it from the README. Capture, environment benchmark, non-learning baseline, recording, offline detector, episode scan, reset stress, and capture-stability commands are listed with their live/offline requirements. Training and evaluation commands remain absent because no algorithm, checkpoint format, reward protocol, or held-out evaluation protocol has been accepted yet.
+
+## 2026-08-26 — Chose uv as the developer task runner
+
+Added `docs/developer-commands.md` with canonical PowerShell commands for setup, formatting, linting, type checking, tests, coverage, pre-commit, packaging, offline analysis, and live smoke tools. `uv` is the task runner because it already owns the pinned interpreter, lockfile, synchronization, and project command execution. `train` and `evaluate` remain future commands until their protocols are real.
+
+## 2026-08-26 — Added the PowerShell task runner
+
+Added `scripts/dev.ps1` with named tasks for setup, format, lint, typecheck, test, test-offline, test-live, benchmark, train, and evaluate. Live tasks require an explicit `-ConfirmLive`; train/evaluate return exit code 2 with an actionable message until the learning protocol is implemented.
+
+## 2026-08-26 — Proved offline CLI paths do not need Geometry Dash
+
+Added `tests/test_offline_cli.py`. It runs the episode scanner and offline detector benchmark help paths with `GEOMETRY_DASH_EXE` set to a deliberately missing executable and verifies both exit successfully without touching the live environment.
+
+## 2026-08-26 — Locked fail-fast behavior for live commands
+
+Added `tests/test_live_cli_contract.py`. A jump capture invoked with a deliberately missing `GEOMETRY_DASH_EXE` exits nonzero before waiting for a window or sending input, and includes the exact missing path in its actionable error message.
+
+## 2026-08-26 — Locked public CLI help and exit codes
+
+Added `tests/test_cli_help.py` for all ten public tools. Each `--help` path exits 0 with usage text, and each deliberately unknown option exits 2, providing a stable parser contract for scripts and CI.
+
+## 2026-08-26 — Deferred shell completion intentionally
+
+Recorded the decision to defer shell completion until the CLI names and flags stabilize. The PowerShell task runner's `ValidateSet` remains the authoritative task list while `train` and `evaluate` are not implemented.
+
+## 2026-08-26 — Added public API and CLI docstring requirements
+
+Added `docs/docstring-policy.md` and enabled Ruff `D102`/`D107` checks for public package methods. CLI modules retain module-level safety/usage documentation, while parser helpers remain implementation details instead of duplicating argparse text.
+
+## 2026-08-26 — Added dead-code and duplicate-code review gates
+
+Added `docs/quality-review.md`. The review records Ruff unused-name checks, the single package implementation path, the intentional compatibility re-export, the retained legacy detector used for equivalence benchmarking, and the rule that apparently unused code must be checked against CLI, benchmark, and evidence roles before removal.
+
+## 2026-08-26 — Corrected the stale reset timeout message
+
+Updated `tools/reset_episode.py` so a timeout reports that the results screen did not clear after clicking retry, matching the implementation. The earlier “pressing R” sentence remains in the learning log only as a historical account of the first reset attempt and the later fix.
+
+## 2026-08-26 — Added CI failure evidence artifacts
+
+Updated `.github/workflows/quality.yml` to save verbose unittest output, `coverage.xml`, and raw `.coverage` data when a Windows quality job fails. Coverage rendering is attempted after tests even on failure, while the build remains a separate visible step.
+
+## 2026-08-26 — Scheduled dependency security auditing
+
+Pinned `pip-audit` in the dev dependency group and added a weekly/manual Windows workflow that installs from `uv.lock` before running `uv run pip-audit --strict`. The command and its failure semantics are documented in `docs/security-audit.md`.
+
+## 2026-08-26 — Exported a historical dependency snapshot
+
+Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

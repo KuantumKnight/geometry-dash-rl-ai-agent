@@ -47,6 +47,7 @@ class GeometryDashEnv(gym.Env):
         reset_settle: float = 1.0,
         reset_stable_frames: int = 3,
     ) -> None:
+        """Create a pixel-based environment with validated timing settings."""
         if observation_size[0] <= 0 or observation_size[1] <= 0:
             raise ValueError("observation_size dimensions must be positive")
         if fps <= 0 or frame_skip <= 0 or frame_stack <= 0 or max_steps <= 0:
@@ -85,6 +86,7 @@ class GeometryDashEnv(gym.Env):
         )
 
     def close(self) -> None:
+        """Release the screen-capture backend owned by this environment."""
         self._screen.close()
 
     def _ensure_window(self) -> None:

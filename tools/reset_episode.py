@@ -99,7 +99,7 @@ def main() -> None:
                 break
 
         if not cleared:
-            raise TimeoutError("Results screen did not clear after pressing R.")
+            raise TimeoutError("Results screen did not clear after clicking retry.")
 
         time.sleep(args.settle)
         after = capture_game_frame(screen, bbox)
