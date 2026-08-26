@@ -592,3 +592,7 @@ A focused screenshot confirmed `Stereo Madness`, an `800×600` client capture, `
 ## 2026-08-26 — Recorded video encoder provenance
 
 Recorded `ffmpeg 8.1.1-full_build-www.gyan.dev` and verified the candidate episode as a 20-second, 1,200-frame H.264 MP4 at 800×600 and 60 FPS. Encoding was enabled for the recorder run; benchmark commands remain non-video measurements.
+
+## 2026-08-26 — Exported a historical dependency snapshot
+
+Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
