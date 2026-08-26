@@ -5,15 +5,9 @@ from __future__ import annotations
 import argparse
 import math
 import random
-import sys
-from pathlib import Path
 from statistics import mean
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-from src.geometry_dash_env import GeometryDashEnv  # noqa: E402
+from geometry_dash_env import GeometryDashEnv
 
 
 def parse_args() -> argparse.Namespace:
@@ -77,7 +71,7 @@ def run_policy(
         for episode_index in range(episodes):
             try:
                 env.reset(seed=seed + episode_index)
-            except Exception as exc:  # noqa: BLE001 - report unattended failures.
+            except Exception as exc:
                 reset_failures += 1
                 print(
                     f"policy={policy} episode={episode_index + 1:03d} "
@@ -94,7 +88,7 @@ def run_policy(
                 if terminated:
                     deaths += 1
                     progress_ratio = info.get("progress_ratio")
-                    if progress_ratio is not None:
+                    if isinstance(progress_ratio, (int, float)):
                         terminal_progress = float(progress_ratio)
                     break
                 if truncated:
@@ -154,7 +148,10 @@ def main() -> None:
 
     print()
     print("baseline summary")
-    print("policy    episodes  avg_progress  best_progress  avg_length  death_rate  resets_failed")
+    print(
+        "policy    episodes  avg_progress  best_progress  avg_length  "
+        "death_rate  resets_failed"
+    )
     for result in results:
         print(
             f"{result['policy']:<9} {result['episodes']:>8} "
@@ -165,7 +162,7 @@ def main() -> None:
             f"{result['reset_failures']:>13}"
         )
     print(f"periodic jump interval: {args.period} decisions")
-    print(f"progress samples are terminal results-screen estimates")
+    print("progress samples are terminal results-screen estimates")
 
 
 if __name__ == "__main__":

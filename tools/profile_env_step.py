@@ -4,18 +4,12 @@ from __future__ import annotations
 
 import argparse
 import random
-import sys
 import time
-from pathlib import Path
 from statistics import mean
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-from src.geometry_dash_env import GeometryDashEnv  # noqa: E402
-from tools.capture_action import send_jump  # noqa: E402
-from tools.game_state import is_death_screen  # noqa: E402
+from geometry_dash_env import GeometryDashEnv
+from geometry_dash_env.game_state import is_death_screen
+from geometry_dash_env.platform_control import send_jump
 
 
 def parse_args() -> argparse.Namespace:
@@ -51,10 +45,13 @@ def main() -> None:
     try:
         env.reset()
         resets += 1
+        hwnd = env._hwnd
+        if hwnd is None:
+            raise RuntimeError("Environment reset without a game window")
         for index in range(args.frames):
             action = rng.choice([0, 1])
             if action == 1:
-                send_jump(env._hwnd)
+                send_jump(hwnd)
 
             frame_started = time.perf_counter()
 
