@@ -180,6 +180,18 @@ def window_process_path(hwnd: wintypes.HWND) -> Path | None:
         kernel32.CloseHandle(process_handle)
 
 
+def select_game_window(
+    matching_windows: list[wintypes.HWND],
+) -> wintypes.HWND | None:
+    """Select one process-owned window or fail clearly on ambiguity."""
+
+    if len(matching_windows) > 1:
+        raise RuntimeError(
+            "Multiple visible Geometry Dash windows match the configured executable"
+        )
+    return matching_windows[0] if matching_windows else None
+
+
 def find_game_window(game_path: Path | None = None) -> wintypes.HWND | None:
     """Find a visible top-level window owned by the configured executable."""
 
@@ -199,11 +211,10 @@ def find_game_window(game_path: Path | None = None) -> wintypes.HWND | None:
             process_path = window_process_path(hwnd)
             if process_path and normalized_path(process_path) == target_path:
                 matching_windows.append(hwnd)
-                return False
         return True
 
     user32.EnumWindows(visit_window, 0)
-    return matching_windows[0] if matching_windows else None
+    return select_game_window(matching_windows)
 
 
 def focus_window(hwnd: wintypes.HWND) -> None:

@@ -263,7 +263,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Prevent `ctypes.WinDLL` calls at import time on non-Windows platforms; Win32 libraries are lazy-loaded only for live operations and protected by an offline import test.
 - [x] VERIFIED — Replace the hard-coded `Geometry Dash/GeometryDash.exe` assumption with `GEOMETRY_DASH_EXE`/adapter configuration while retaining a project-local safe default.
 - [x] VERIFIED — Normalize and validate the configured executable path, require an `.exe` suffix, and keep routine diagnostics focused on the executable target.
-- [ ] P0 — Identify the game process/window by more than one robust signal; handle multiple matching windows explicitly.
+- [x] VERIFIED — Identify the game window using visibility plus owning executable path, and fail closed when multiple matching windows are present.
 - [ ] P0 — Reacquire the window handle after game restart or handle invalidation.
 - [ ] P0 — Detect minimized, occluded, zero-size, or off-screen client areas and stop safely.
 - [ ] P0 — Detect client resolution changes and either rebuild observation state or terminate with a clear reason.

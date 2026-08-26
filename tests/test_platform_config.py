@@ -6,8 +6,13 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any, cast
 
-from geometry_dash_env.platform_control import resolve_game_path, validate_game_path
+from geometry_dash_env.platform_control import (
+    resolve_game_path,
+    select_game_window,
+    validate_game_path,
+)
 
 
 class PlatformConfigTests(unittest.TestCase):
@@ -38,6 +43,17 @@ class PlatformConfigTests(unittest.TestCase):
                 ),
                 os.path.normcase(str(executable.resolve(strict=False))),
             )
+
+    def test_multiple_matching_windows_fail_closed(self) -> None:
+        """Ambiguous live targets require operator cleanup before input."""
+
+        with self.assertRaisesRegex(RuntimeError, "Multiple visible"):
+            select_game_window(cast(Any, [1, 2]))
+
+    def test_single_matching_window_is_selected(self) -> None:
+        """A single process-owned visible window is safe to select."""
+
+        self.assertEqual(select_game_window(cast(Any, [42])), 42)
 
 
 if __name__ == "__main__":
