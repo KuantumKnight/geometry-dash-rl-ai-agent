@@ -66,3 +66,13 @@ Windows desktop scaling was 150%. Win32 returned logical window coordinates whil
 ### Fix
 
 Make the capture process per-monitor DPI aware before querying window coordinates so Win32 and Pillow use the same coordinate system.
+
+## 2026-08-26 — Jump action validated
+
+### Result
+
+The focused-window prototype successfully delivered a jump action inside a playable level. This validates the first action in the environment: a space-bar press can be sent to Geometry Dash without launching or controlling another window.
+
+### Next experiment
+
+Record a short gameplay trace containing an alive-to-dead transition. Inspecting those frames will determine the first reliable death-state signal and the reset action.

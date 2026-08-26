@@ -17,6 +17,8 @@ This roadmap is intentionally incremental. Each stage should produce a working a
 - [ ] Reset the game reliably
 - [ ] Measure whether the interaction loop is fast and stable enough
 
+The jump action has been manually validated; the checklist remains open until it is covered by a repeatable test.
+
 ## Stage 2 — Gym-style environment
 
 - [ ] Implement `reset()` and `step(action)`
