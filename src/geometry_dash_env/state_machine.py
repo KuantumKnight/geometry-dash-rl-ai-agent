@@ -38,7 +38,12 @@ class StateTransition:
 
 LEGAL_TRANSITIONS: dict[ScreenState, frozenset[ScreenState]] = {
     ScreenState.DISCONNECTED: frozenset(
-        {ScreenState.MAIN_MENU, ScreenState.LEVEL_INFO, ScreenState.ERROR}
+        {
+            ScreenState.MAIN_MENU,
+            ScreenState.LEVEL_INFO,
+            ScreenState.RESETTING,
+            ScreenState.ERROR,
+        }
     ),
     ScreenState.MAIN_MENU: frozenset(
         {ScreenState.LEVEL_INFO, ScreenState.DISCONNECTED, ScreenState.ERROR}
@@ -108,6 +113,23 @@ class StateMachine:
         """Return whether the requested state is legal from the current state."""
 
         return current in LEGAL_TRANSITIONS[self._state]
+
+    def start(
+        self,
+        current: ScreenState,
+        *,
+        reason: str,
+        confidence: float | None = None,
+    ) -> StateTransition:
+        """Record the first detector state observed after connection."""
+
+        if self._state != ScreenState.DISCONNECTED:
+            raise StateTransitionError("state machine has already started")
+        return self.transition(
+            current,
+            reason=reason,
+            confidence=confidence,
+        )
 
     def transition(
         self,

@@ -737,6 +737,10 @@ The observation contract explicitly declares RGB `HWC`; stacked observations rem
 
 Added `docs/phase1-status.md` to distinguish deterministic offline contract work from claims that require a running reference game. The remaining live gates are named explicitly so future qualification artifacts can be linked to a Git SHA, configuration, redacted system fingerprint, report, and checksums.
 
+## 2026-08-26 — Added reset-state initialization
+
+The state machine now supports an explicit `start()` transition and a disconnected-to-resetting edge, allowing environment resets to enter the canonical graph without bypassing transition validation.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
