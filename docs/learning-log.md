@@ -152,3 +152,13 @@ On this Geometry Dash build, neither `R` nor Space cleared the results screen. T
 ### Live validation
 
 The reset controller successfully detected a real results screen, clicked retry, and produced an `after_reset.png` frame showing gameplay in Attempt 6. Reset is now validated for this window layout.
+
+## 2026-08-26 — Initial pixel environment API
+
+### Implementation
+
+Added `GeometryDashEnv` with `reset()` and `step(action)`, two discrete actions, `160×90` RGB pixel observations, and a provisional terminal penalty.
+
+### Scope
+
+This wrapper proves the basic environment shape only. It does not yet include a progress reward, time limit, robust gameplay-state classification, or a learning algorithm.
