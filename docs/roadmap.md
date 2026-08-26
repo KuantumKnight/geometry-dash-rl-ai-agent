@@ -173,7 +173,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Configure deterministic formatting.
 - [x] VERIFIED — Configure lint rules, with narrow documented ignores instead of file-wide suppression.
 - [x] VERIFIED — Configure type checking for package code first, then tools and tests.
-- [ ] P0 — Add docstring requirements for public APIs and CLI entry points.
+- [x] VERIFIED — Add Ruff missing-docstring checks for public package methods plus the written API/CLI policy in `docs/docstring-policy.md`.
 - [x] VERIFIED — Add a pre-commit configuration for formatting, linting, whitespace, YAML/TOML validation, and secret detection.
 - [x] VERIFIED — Add a branch-aware coverage report with a 60% floor for offline-testable core logic.
 - [ ] P0 — Add dead-code and duplicate-code review to the refactor checklist.

@@ -629,6 +629,10 @@ Added `tests/test_cli_help.py` for all ten public tools. Each `--help` path exit
 
 Recorded the decision to defer shell completion until the CLI names and flags stabilize. The PowerShell task runner's `ValidateSet` remains the authoritative task list while `train` and `evaluate` are not implemented.
 
+## 2026-08-26 — Added public API and CLI docstring requirements
+
+Added `docs/docstring-policy.md` and enabled Ruff `D102`/`D107` checks for public package methods. CLI modules retain module-level safety/usage documentation, while parser helpers remain implementation details instead of duplicating argparse text.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
