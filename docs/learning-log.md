@@ -76,3 +76,13 @@ The focused-window prototype successfully delivered a jump action inside a playa
 ### Next experiment
 
 Record a short gameplay trace containing an alive-to-dead transition. Inspecting those frames will determine the first reliable death-state signal and the reset action.
+
+## 2026-08-26 — Episode video recording
+
+### Decision
+
+Each recorded episode will keep both PNG frames and a local MP4 video. The MP4 is easier to review and document, while the individual frames remain useful for state detection and future RL observations.
+
+### Repository policy
+
+Episode artifacts stay outside Git history because raw frames and videos can become large. Commit metadata, findings, and selected summaries; keep videos locally or attach selected milestone clips to GitHub Releases later.

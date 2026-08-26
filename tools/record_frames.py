@@ -8,13 +8,23 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
+import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 from PIL import ImageGrab
 
-from capture_action import GAME_PATH, find_game_window, focus_window, game_client_bbox
+try:
+    from .capture_action import (
+        GAME_PATH,
+        find_game_window,
+        focus_window,
+        game_client_bbox,
+    )
+except ImportError:  # Direct execution: `py tools\\record_frames.py`.
+    from capture_action import GAME_PATH, find_game_window, focus_window, game_client_bbox
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -41,7 +51,54 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_OUTPUT,
         help="Directory for the recorded episode.",
     )
+    parser.add_argument(
+        "--no-video",
+        action="store_true",
+        help="Skip MP4 creation and save PNG frames only.",
+    )
     return parser.parse_args()
+
+
+def create_video(episode_dir: Path, fps: float) -> Path | None:
+    """Encode the recorded PNG sequence as a browser-friendly MP4."""
+
+    ffmpeg = shutil.which("ffmpeg")
+    if ffmpeg is None:
+        print("ffmpeg not found; skipping video creation.")
+        return None
+
+    video_path = episode_dir / "episode.mp4"
+    command = [
+        ffmpeg,
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-framerate",
+        str(fps),
+        "-i",
+        str(episode_dir / "frame_%05d.png"),
+        "-c:v",
+        "libx264",
+        "-vf",
+        "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+        "-preset",
+        "veryfast",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-movflags",
+        "+faststart",
+        str(video_path),
+    ]
+    try:
+        subprocess.run(command, check=True)
+    except subprocess.CalledProcessError as exc:
+        video_path.unlink(missing_ok=True)
+        print(f"ffmpeg failed with exit code {exc.returncode}; keeping PNG frames.")
+        return None
+    return video_path
 
 
 def main() -> None:
@@ -77,6 +134,7 @@ def main() -> None:
         if sleep_for > 0:
             time.sleep(sleep_for)
 
+    video_path = None if args.no_video else create_video(episode_dir, args.fps)
     metadata = {
         "game_executable": str(GAME_PATH),
         "capture_bbox": bbox,
@@ -84,11 +142,14 @@ def main() -> None:
         "requested_fps": args.fps,
         "frame_count": frame_count,
         "started_utc": timestamp,
+        "video_file": video_path.name if video_path else None,
     }
     (episode_dir / "metadata.json").write_text(
         json.dumps(metadata, indent=2), encoding="utf-8"
     )
     print(f"Saved {frame_count} frames to {episode_dir}")
+    if video_path:
+        print(f"Saved video to {video_path}")
 
 
 if __name__ == "__main__":
