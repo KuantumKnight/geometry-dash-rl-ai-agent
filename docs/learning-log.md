@@ -633,6 +633,10 @@ Recorded the decision to defer shell completion until the CLI names and flags st
 
 Added `docs/docstring-policy.md` and enabled Ruff `D102`/`D107` checks for public package methods. CLI modules retain module-level safety/usage documentation, while parser helpers remain implementation details instead of duplicating argparse text.
 
+## 2026-08-26 — Added dead-code and duplicate-code review gates
+
+Added `docs/quality-review.md`. The review records Ruff unused-name checks, the single package implementation path, the intentional compatibility re-export, the retained legacy detector used for equivalence benchmarking, and the rule that apparently unused code must be checked against CLI, benchmark, and evidence roles before removal.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
