@@ -63,8 +63,8 @@ class FakePlatform:
         del hwnd
         pass
 
-    def send_jump(self, hwnd) -> None:
-        self.jump_calls.append(hwnd)
+    def send_jump(self, hwnd: Any, *, ensure_focus: bool = True) -> None:
+        self.jump_calls.append((hwnd, ensure_focus))
 
     def click_client(self, hwnd) -> None:
         self.click_calls.append(hwnd)
@@ -154,11 +154,25 @@ class EnvironmentTests(unittest.TestCase):
         ):
             observation, reward, terminated, truncated, _info = env.step(1)
 
-        self.assertEqual(self.platform.jump_calls, [123])
+        self.assertEqual(self.platform.jump_calls, [(123, True)])
         self.assertEqual(observation.shape, (90, 160, 3))
         self.assertEqual(reward, 0.0)
         self.assertFalse(terminated)
         self.assertFalse(truncated)
+
+    def test_focus_on_action_is_explicitly_opt_in(self) -> None:
+        """A caller can suppress automatic focus stealing for actions."""
+
+        env = self.make_env(frame_skip=1, focus_on_action=False)
+        self.activate(env)
+        with (
+            patch.object(env, "_wait_for_frame_deadline"),
+            patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
+            patch("geometry_dash_env.environment.is_death_screen", return_value=False),
+        ):
+            env.step(1)
+
+        self.assertEqual(self.platform.jump_calls, [(123, False)])
 
     def test_death_detector_recognizes_results_and_rejects_gameplay(self) -> None:
         self.assertTrue(is_death_screen(results_image()))

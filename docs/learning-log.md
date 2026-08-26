@@ -681,6 +681,10 @@ Win32 client-rectangle validation now rejects minimized, invisible, non-foregrou
 
 The environment no longer silently mixes observations after a window move or resize. A changed client bounding box records the old and new rectangles, ends the episode, and requires an explicit reset.
 
+## 2026-08-26 — Made focus policy explicit
+
+`GeometryDashEnv` now exposes separate `focus_on_reset` and `focus_on_action` switches. Live commands retain safe focus behavior by default, while offline/future integrations can opt out and own focus management themselves.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

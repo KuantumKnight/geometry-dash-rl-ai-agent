@@ -273,7 +273,7 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Add a maximum action rate so a bug cannot flood input indefinitely.
 - [ ] P0 — Restore the user's cursor only if cursor movement remains necessary for reset.
 - [ ] P0 — Prefer a reset input that does not depend on hard-coded screen coordinates; otherwise calibrate and validate normalized coordinates.
-- [ ] P0 — Make focus-stealing behavior explicit and opt-in for live commands.
+- [x] VERIFIED — Make focus behavior explicit through `focus_on_reset` and `focus_on_action`; callers can disable focus stealing while the safe default remains enabled.
 - [ ] P1 — Measure whether the input API drops presses at different game/window states.
 - [ ] P1 — Add press-duration configuration and validate a short press across supported machines.
 

@@ -309,20 +309,26 @@ def game_client_bbox(hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
     )
 
 
-def send_key(hwnd: wintypes.HWND, virtual_key: int) -> None:
+def send_key(
+    hwnd: wintypes.HWND,
+    virtual_key: int,
+    *,
+    ensure_focus: bool = True,
+) -> None:
     """Send one key press, restoring focus only if it was lost."""
 
     user32, _ = _load_win32()
-    focus_window_if_needed(hwnd)
+    if ensure_focus:
+        focus_window_if_needed(hwnd)
     user32.keybd_event(virtual_key, 0, 0, 0)
     time.sleep(0.005)
     user32.keybd_event(virtual_key, 0, KEYEVENTF_KEYUP, 0)
 
 
-def send_jump(hwnd: wintypes.HWND) -> None:
+def send_jump(hwnd: wintypes.HWND, *, ensure_focus: bool = True) -> None:
     """Send a short space-bar press to the focused game window."""
 
-    send_key(hwnd, VK_SPACE)
+    send_key(hwnd, VK_SPACE, ensure_focus=ensure_focus)
 
 
 def click_client(
@@ -368,7 +374,12 @@ class PlatformBackend(Protocol):
         """Restore focus only when the game is not foreground."""
         ...
 
-    def send_jump(self, hwnd: wintypes.HWND) -> None:
+    def send_jump(
+        self,
+        hwnd: wintypes.HWND,
+        *,
+        ensure_focus: bool = True,
+    ) -> None:
         """Dispatch one configured jump press."""
         ...
 
@@ -410,10 +421,15 @@ class Win32Platform:
 
         focus_window_if_needed(hwnd)
 
-    def send_jump(self, hwnd: wintypes.HWND) -> None:
+    def send_jump(
+        self,
+        hwnd: wintypes.HWND,
+        *,
+        ensure_focus: bool = True,
+    ) -> None:
         """Dispatch one short jump press."""
 
-        send_jump(hwnd)
+        send_jump(hwnd, ensure_focus=ensure_focus)
 
     def click_client(self, hwnd: wintypes.HWND) -> None:
         """Click the default normalized reset location."""

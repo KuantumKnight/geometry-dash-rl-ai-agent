@@ -51,6 +51,8 @@ class GeometryDashEnv(gym.Env):
         reset_timeout: float = 3.0,
         reset_settle: float = 1.0,
         reset_stable_frames: int = 3,
+        focus_on_reset: bool = True,
+        focus_on_action: bool = True,
         platform_backend: PlatformBackend | None = None,
         capture_backend: CaptureBackend | None = None,
     ) -> None:
@@ -75,6 +77,8 @@ class GeometryDashEnv(gym.Env):
         self.reset_timeout = reset_timeout
         self.reset_settle = reset_settle
         self.reset_stable_frames = reset_stable_frames
+        self.focus_on_reset = focus_on_reset
+        self.focus_on_action = focus_on_action
         self._screen: CaptureBackend = cast(CaptureBackend, capture_backend or MSS())
         self._platform = platform_backend or Win32Platform()
         self._hwnd = None
@@ -105,7 +109,8 @@ class GeometryDashEnv(gym.Env):
             raise RuntimeError(
                 "No visible Geometry Dash window found. Start the game first."
             )
-        self._platform.focus_window(self._hwnd)
+        if self.focus_on_reset:
+            self._platform.focus_window(self._hwnd)
         self._bbox = self._platform.game_client_bbox(self._hwnd)
 
     def _capture(self) -> Image.Image:
@@ -238,7 +243,7 @@ class GeometryDashEnv(gym.Env):
         action = int(action)
 
         if action == 1:
-            self._platform.send_jump(hwnd)
+            self._platform.send_jump(hwnd, ensure_focus=self.focus_on_action)
         image: Image.Image | None = None
         terminated = False
         frames_elapsed = 0
