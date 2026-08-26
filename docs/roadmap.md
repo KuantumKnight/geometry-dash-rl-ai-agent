@@ -43,7 +43,7 @@ The final environment passed 9 unit tests, completed a 100-step benchmark at 83.
 ## Phase 2 — Define the RL problem properly
 
 - [x] Establish observation v1 as a 160×90 RGB frame
-- [ ] Add configurable temporal frame stacking
+- [x] Add configurable temporal frame stacking
 - [ ] Compare RGB, grayscale, and cropped gameplay observations
 - [ ] Choose a training representation based on speed and task performance
 - [x] Defer object detection until a simple pixel baseline is evaluated

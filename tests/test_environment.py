@@ -45,6 +45,20 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(env.observation_space.shape, (90, 160, 3))
         self.assertTrue(env.observation_space.contains(np.zeros((90, 160, 3), dtype=np.uint8)))
 
+    def test_four_frame_stack_preserves_oldest_to_newest_order(self) -> None:
+        env = self.make_env(frame_stack=4)
+        first_image = Image.new("RGB", (800, 600), (10, 20, 30))
+        second_image = Image.new("RGB", (800, 600), (200, 210, 220))
+
+        initial = env._reset_observation(first_image)
+        updated = env._observation(second_image)
+
+        self.assertEqual(initial.shape, (4, 90, 160, 3))
+        self.assertEqual(env.observation_space.shape, (4, 90, 160, 3))
+        self.assertTrue(env.observation_space.contains(updated))
+        np.testing.assert_array_equal(updated[0], initial[1])
+        np.testing.assert_array_equal(updated[-1], env._single_observation(second_image))
+
     def test_reset_smoke_returns_valid_observation(self) -> None:
         env = self.make_env(reset_settle=0)
         with (

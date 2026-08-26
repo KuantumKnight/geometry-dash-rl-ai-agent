@@ -454,3 +454,13 @@ Observation v1 remains a single `160×90` RGB frame. This gives us a simple, rep
 The next implementation adds configurable frame stacking so a policy can observe recent motion rather than one isolated screenshot. The initial comparison will keep RGB and use four frames in oldest-to-newest order; grayscale and cropped-region variants come later. Object detection is intentionally deferred.
 
 The media archive rule continues through Phase 2: preserve any episode that demonstrates a meaningful observation breakthrough, failure mode, or presentation-worthy result.
+
+## 2026-08-26 — Added configurable RGB frame stacking
+
+### Implementation
+
+Added `frame_stack` to `GeometryDashEnv`. The default `frame_stack=1` preserves the single-frame RGB baseline. Setting `frame_stack=4` returns four observations in oldest-to-newest order with shape `(4, 90, 160, 3)`; reset fills the initial buffer with the first frame so the observation space is valid immediately.
+
+### Validation
+
+The environment test suite now passes 10 tests, including stack ordering. A live `frame_stack=4` reset and no-op step both returned `(4, 90, 160, 3)` observations accepted by the Gymnasium observation space. No grayscale conversion, cropping, object detection, or RL training was introduced.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import deque
 import time
 from pathlib import Path
 
@@ -40,6 +41,7 @@ class GeometryDashEnv(gym.Env):
         observation_size: tuple[int, int] = (160, 90),
         fps: float = 60.0,
         frame_skip: int = 4,
+        frame_stack: int = 1,
         max_steps: int = 900,
         reset_timeout: float = 3.0,
         reset_settle: float = 1.0,
@@ -47,8 +49,8 @@ class GeometryDashEnv(gym.Env):
     ) -> None:
         if observation_size[0] <= 0 or observation_size[1] <= 0:
             raise ValueError("observation_size dimensions must be positive")
-        if fps <= 0 or frame_skip <= 0 or max_steps <= 0:
-            raise ValueError("fps, frame_skip, and max_steps must be positive")
+        if fps <= 0 or frame_skip <= 0 or frame_stack <= 0 or max_steps <= 0:
+            raise ValueError("fps, frame_skip, frame_stack, and max_steps must be positive")
         if reset_timeout <= 0 or reset_settle < 0 or reset_stable_frames <= 0:
             raise ValueError(
                 "reset_timeout must be positive, reset_settle cannot be negative, "
@@ -58,6 +60,7 @@ class GeometryDashEnv(gym.Env):
         self.fps = fps
         self.frame_interval = 1.0 / fps
         self.frame_skip = frame_skip
+        self.frame_stack = frame_stack
         self.max_steps = max_steps
         self.reset_timeout = reset_timeout
         self.reset_settle = reset_settle
@@ -67,11 +70,15 @@ class GeometryDashEnv(gym.Env):
         self._bbox: tuple[int, int, int, int] | None = None
         self._episode_active = False
         self._step_count = 0
+        self._frame_buffer: deque[np.ndarray] = deque(maxlen=frame_stack)
         self.action_space = gym.spaces.Discrete(2)
+        observation_shape = (observation_size[1], observation_size[0], 3)
+        if frame_stack > 1:
+            observation_shape = (frame_stack, *observation_shape)
         self.observation_space = gym.spaces.Box(
             low=0,
             high=255,
-            shape=(observation_size[1], observation_size[0], 3),
+            shape=observation_shape,
             dtype=np.uint8,
         )
 
@@ -101,9 +108,25 @@ class GeometryDashEnv(gym.Env):
         )
         return Image.frombytes("RGB", shot.size, shot.rgb)
 
-    def _observation(self, image: Image.Image) -> np.ndarray:
+    def _single_observation(self, image: Image.Image) -> np.ndarray:
         resized = image.resize(self.observation_size, Image.Resampling.BILINEAR)
         return np.asarray(resized, dtype=np.uint8).copy()
+
+    def _stacked_observation(self) -> np.ndarray:
+        if self.frame_stack == 1:
+            return self._frame_buffer[0]
+        return np.stack(tuple(self._frame_buffer), axis=0)
+
+    def _reset_observation(self, image: Image.Image) -> np.ndarray:
+        frame = self._single_observation(image)
+        self._frame_buffer.clear()
+        for _ in range(self.frame_stack):
+            self._frame_buffer.append(frame.copy())
+        return self._stacked_observation()
+
+    def _observation(self, image: Image.Image) -> np.ndarray:
+        self._frame_buffer.append(self._single_observation(image))
+        return self._stacked_observation()
 
     def _wait_for_ready_gameplay(self) -> Image.Image:
         """Wait for consecutive level-like frames after retry or transition."""
@@ -165,10 +188,11 @@ class GeometryDashEnv(gym.Env):
 
         self._episode_active = True
         self._step_count = 0
-        return self._observation(image), {
+        return self._reset_observation(image), {
             "screen_state": "gameplay_or_transition",
             "observation_size": self.observation_size,
             "frame_skip": self.frame_skip,
+            "frame_stack": self.frame_stack,
             "capture_bbox": self._bbox,
         }
 
