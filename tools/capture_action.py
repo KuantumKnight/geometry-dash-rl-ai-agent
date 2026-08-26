@@ -78,6 +78,21 @@ KERNEL32.CloseHandle.argtypes = [wintypes.HANDLE]
 KERNEL32.CloseHandle.restype = wintypes.BOOL
 
 
+def enable_dpi_awareness() -> None:
+    """Keep Win32 window coordinates consistent with Pillow screen pixels."""
+
+    try:
+        shcore = ctypes.WinDLL("shcore", use_last_error=True)
+        shcore.SetProcessDpiAwareness.argtypes = [ctypes.c_int]
+        shcore.SetProcessDpiAwareness.restype = ctypes.HRESULT
+        shcore.SetProcessDpiAwareness(2)  # Per-monitor DPI aware.
+    except (AttributeError, OSError):
+        USER32.SetProcessDPIAware()
+
+
+enable_dpi_awareness()
+
+
 def normalized_path(path: Path) -> str:
     return os.path.normcase(str(path.resolve(strict=False)))
 
@@ -111,7 +126,9 @@ def find_game_window() -> wintypes.HWND | None:
 
     @ENUM_WINDOWS_PROC
     def visit_window(hwnd: wintypes.HWND, _lparam: wintypes.LPARAM) -> bool:
-        if USER32.IsWindowVisible(hwnd) and not USER32.IsIconic(hwnd):
+        # Minimized windows are still valid targets; focus_window() restores
+        # them before we calculate the client-area bounding box.
+        if USER32.IsWindowVisible(hwnd):
             process_path = window_process_path(hwnd)
             if process_path and normalized_path(process_path) == target_path:
                 matching_window.append(hwnd)

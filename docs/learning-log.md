@@ -38,3 +38,31 @@ The first draft captured the primary display, which was too broad for an RL obse
 ### Next test
 
 Start Geometry Dash manually, run the prototype with `--action noop`, and inspect the two game-window frames. Only then test `--action jump`.
+
+## 2026-08-26 — Window lookup bug
+
+### Failure
+
+The first focused-window test reported that no Geometry Dash window was found even though the process was running.
+
+### Root cause
+
+The game window was minimized. The lookup rejected minimized windows before the restore step could run.
+
+### Fix
+
+Allow visible minimized windows to match the executable path, then restore and focus the matching window before calculating its client-area bounds.
+
+## 2026-08-26 — DPI coordinate mismatch
+
+### Failure
+
+The script found the window and reported the expected client size, but captures still included the terminal and title bar.
+
+### Root cause
+
+Windows desktop scaling was 150%. Win32 returned logical window coordinates while Pillow captured physical screen pixels.
+
+### Fix
+
+Make the capture process per-monitor DPI aware before querying window coordinates so Win32 and Pillow use the same coordinate system.
