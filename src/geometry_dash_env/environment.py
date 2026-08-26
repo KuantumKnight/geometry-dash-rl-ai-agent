@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
+import gymnasium as gym
 import numpy as np
 from mss import MSS
 from PIL import Image
@@ -20,7 +21,7 @@ from tools.capture_action import (
 from tools.game_state import classify_screen, is_death_screen, results_progress_ratio
 
 
-class GeometryDashEnv:
+class GeometryDashEnv(gym.Env):
     """Minimal environment with pixel observations and two discrete actions.
 
     Actions:
@@ -30,6 +31,8 @@ class GeometryDashEnv:
     The current reward is deliberately provisional: zero while alive and -1
     when the results screen is detected. Progress-based reward comes later.
     """
+
+    metadata = {"render_modes": []}
 
     def __init__(
         self,
@@ -64,6 +67,13 @@ class GeometryDashEnv:
         self._bbox: tuple[int, int, int, int] | None = None
         self._episode_active = False
         self._step_count = 0
+        self.action_space = gym.spaces.Discrete(2)
+        self.observation_space = gym.spaces.Box(
+            low=0,
+            high=255,
+            shape=(observation_size[1], observation_size[0], 3),
+            dtype=np.uint8,
+        )
 
     def close(self) -> None:
         self._screen.close()
@@ -129,9 +139,15 @@ class GeometryDashEnv:
         if remaining > 0:
             time.sleep(remaining)
 
-    def reset(self) -> tuple[np.ndarray, dict[str, object]]:
+    def reset(
+        self,
+        *,
+        seed: int | None = None,
+        options: dict[str, object] | None = None,
+    ) -> tuple[np.ndarray, dict[str, object]]:
         """Start or retry an episode and return the first pixel observation."""
 
+        super().reset(seed=seed)
         self._ensure_window()
         image = self._capture()
         screen_state = classify_screen(image)
@@ -163,8 +179,9 @@ class GeometryDashEnv:
 
         if not self._episode_active or self._hwnd is None:
             raise RuntimeError("Call reset() before step()")
-        if action not in (0, 1):
+        if not self.action_space.contains(action):
             raise ValueError("action must be 0 (no-op) or 1 (jump)")
+        action = int(action)
 
         if action == 1:
             send_jump(self._hwnd)

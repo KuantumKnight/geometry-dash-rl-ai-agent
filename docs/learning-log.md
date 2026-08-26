@@ -395,3 +395,13 @@ last image size:      (800, 600)
 ```
 
 The live window remained stable for 100 captures, and the implementation now detects movement or resize on the next capture instead of continuing with stale coordinates.
+
+## 2026-08-26 — Added Gymnasium spaces and base class
+
+### Implementation
+
+Added `gymnasium.Env` inheritance, `Discrete(2)` for no-op/jump actions, and a `Box` observation space matching the returned `(90, 160, 3)` `uint8` pixels. `reset(seed=None, options=None)` now follows the standard Gymnasium signature.
+
+### Scope
+
+This commit only cleans up the environment API. It does not introduce an agent, training loop, or reward changes.

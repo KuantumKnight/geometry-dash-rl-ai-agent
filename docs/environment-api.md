@@ -1,4 +1,4 @@
-# Environment API — Initial Smoke-Test Interface
+# Environment API — Gymnasium-Compatible Interface
 
 The first environment wrapper is in `src/geometry_dash_env/environment.py`.
 
@@ -10,6 +10,10 @@ observation, info = env.reset()
 observation, reward, terminated, truncated, info = env.step(0)
 env.close()
 ```
+
+`GeometryDashEnv` inherits from `gymnasium.Env`, exposes `action_space` as
+`gymnasium.spaces.Discrete(2)`, and exposes `observation_space` as a
+`gymnasium.spaces.Box` with shape `(90, 160, 3)` and dtype `uint8`.
 
 ## Observation
 
@@ -34,4 +38,4 @@ Capture remains at 60 FPS by default. The environment repeats each chosen action
 
 The default time limit is `max_steps=900` decisions, or approximately 60 seconds at the default settings. Reaching the limit returns `truncated=True`.
 
-This is intentionally not the final reward design. The next iteration should add a reliable gameplay-state classifier, progress-based reward, and a proper Gymnasium-compatible wrapper once the interaction loop is stable.
+This is intentionally not the final reward design. The next iteration should add continuous progress tracking and evaluate the environment with a non-learning baseline once the interaction loop is stable.
