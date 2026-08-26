@@ -709,6 +709,10 @@ Added `ScreenState` and `StateMachine` with the ten roadmap states, immutable tr
 
 Reset orchestration now records `ATTEMPT_INTRO` while waiting for stable level frames and transitions to `GAMEPLAY` only after the configured consecutive-frame threshold. The returned reset observation is therefore a post-transition frame.
 
+## 2026-08-26 — Added state transition diagnostics
+
+Reset and step info now expose the current/previous canonical states, transition reason, and optional detector confidence. This keeps state-machine evidence attached to the observation that caused each transition.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
