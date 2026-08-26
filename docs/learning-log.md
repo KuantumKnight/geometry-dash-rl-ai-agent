@@ -649,6 +649,98 @@ Updated `.github/workflows/quality.yml` to save verbose unittest output, `covera
 
 Pinned `pip-audit` in the dev dependency group and added a weekly/manual Windows workflow that installs from `uv.lock` before running `uv run pip-audit --strict`. The command and its failure semantics are documented in `docs/security-audit.md`.
 
+## 2026-08-26 — Made Win32 platform control lazy
+
+Moved `user32` and `kernel32` loading behind a live-operation guard. Offline imports now remain inert, and a regression test protects this boundary so Linux-based tooling can import the package without attempting Win32 calls.
+
+## 2026-08-26 — Added injectable platform and capture boundaries
+
+The environment now depends on small `PlatformBackend` and `CaptureBackend` protocols. The default adapter remains Win32/MSS, while tests can inject deterministic fakes without opening a game window or sending input.
+
+## 2026-08-26 — Configured executable discovery
+
+Executable selection now flows through `GEOMETRY_DASH_EXE` or the adapter constructor, with the project-local `Geometry Dash/GeometryDash.exe` path retained as a safe default. Offline tests cover relative overrides and missing executable behavior.
+
+## 2026-08-26 — Validated live executable paths
+
+`validate_game_path()` now canonicalizes paths, rejects non-`.exe` targets, and optionally verifies existence before any window/input operation. The validation boundary keeps path handling centralized for future redaction and diagnostics.
+
+## 2026-08-26 — Made window selection fail closed
+
+Window enumeration now evaluates every visible window owned by the configured executable. A single match is selected; zero matches returns no target; multiple matches raise an actionable ambiguity error instead of sending input to an arbitrary window.
+
+## 2026-08-26 — Reacquired invalid window handles
+
+Before capture, the environment now checks the cached HWND and reacquires the configured game window when Windows reports that the handle is invalid. The fake platform test covers this restart boundary without opening the game.
+
+## 2026-08-26 — Added capture safety bounds
+
+Win32 client-rectangle validation now rejects minimized, invisible, non-foreground/occluded, zero-size, and off-screen windows. This conservative foreground requirement prevents sampling pixels that may belong to another window.
+
+## 2026-08-26 — Terminated on client-area changes
+
+The environment no longer silently mixes observations after a window move or resize. A changed client bounding box records the old and new rectangles, ends the episode, and requires an explicit reset.
+
+## 2026-08-26 — Made focus policy explicit
+
+`GeometryDashEnv` now exposes separate `focus_on_reset` and `focus_on_action` switches. Live commands retain safe focus behavior by default, while offline/future integrations can opt out and own focus management themselves.
+
+## 2026-08-26 — Added action-rate protection
+
+Each environment step now passes through an optional `max_action_rate` limiter (30 decisions/sec by default). The limiter resets with each episode and is covered by a deterministic timing test.
+
+## 2026-08-26 — Restored cursor after reset clicks
+
+The normalized retry click now snapshots the cursor position and restores it even if mouse dispatch raises. A mocked Win32 test verifies both the click and restoration coordinates.
+
+## 2026-08-26 — Added an explicit emergency stop
+
+Live hosts can inject a thread-safe `EmergencyStop` latch and bind `Ctrl+Shift+F12` to its `request()` method. The environment checks the latch before action dispatch and on every frame boundary, halting without sending additional input.
+
+## 2026-08-26 — Defined canonical screen states
+
+Added `ScreenState` and `StateMachine` with the ten roadmap states, immutable transition records, confidence/reason validation, and a bounded history for diagnostics. Offline tests reject illegal jumps such as `DISCONNECTED -> GAMEPLAY`.
+
+## 2026-08-26 — Locked legal state transitions
+
+`LEGAL_TRANSITIONS` now enumerates the permitted edges for every state. Illegal detector jumps raise `StateTransitionError`; timeout policy is kept at the controller boundary so state semantics and timing remain independently testable.
+
+## 2026-08-26 — Separated attempt intro from gameplay
+
+Reset orchestration now records `ATTEMPT_INTRO` while waiting for stable level frames and transitions to `GAMEPLAY` only after the configured consecutive-frame threshold. The returned reset observation is therefore a post-transition frame.
+
+## 2026-08-26 — Added state transition diagnostics
+
+Reset and step info now expose the current/previous canonical states, transition reason, and optional detector confidence. This keeps state-machine evidence attached to the observation that caused each transition.
+
+## 2026-08-26 — Suppressed actions outside gameplay
+
+`step()` now checks the canonical state before rate limiting or dispatching input. Transition, reset, and error states fail closed with an explicit state name; an offline test confirms no jump reaches the platform backend.
+
+## 2026-08-26 — Guarded reset input by state
+
+`reset()` now validates the canonical state before any retry click. Active gameplay and transition states cannot generate a reset input; only disconnected/menu/results/completion/error states enter reset orchestration.
+
+## 2026-08-26 — Corrected the max-step duration
+
+Updated the API documentation to calculate `900 / 11.99 ≈ 75` seconds from the historical benchmark rather than claiming 60 seconds. The note now distinguishes measured decision rate from variable wall-clock scheduling.
+
+## 2026-08-26 — Versioned environment contracts
+
+Reset and step info now carry stable observation (`observation-v1`), action (`action-v1`), reward (`reward-provisional-v1`), and environment (`phase1-contract-v1`) identifiers. These values are exported for report/metadata writers to persist with runs.
+
+## 2026-08-26 — Froze the image layout
+
+The observation contract explicitly declares RGB `HWC`; stacked observations remain `(stack, H, W, C)`. Channel-first training libraries must use a visible transpose wrapper, preserving a single source of truth for capture and tests.
+
+## 2026-08-26 — Recorded the Phase 1 live-evidence boundary
+
+Added `docs/phase1-status.md` to distinguish deterministic offline contract work from claims that require a running reference game. The remaining live gates are named explicitly so future qualification artifacts can be linked to a Git SHA, configuration, redacted system fingerprint, report, and checksums.
+
+## 2026-08-26 — Added reset-state initialization
+
+The state machine now supports an explicit `start()` transition and a disconnected-to-resetting edge, allowing environment resets to enter the canonical graph without bypassing transition validation.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

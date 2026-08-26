@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import time
 from collections import deque
-from typing import ClassVar
+from threading import Event
+from typing import Any, ClassVar, Protocol, cast
 
 import gymnasium as gym
 import numpy as np
@@ -12,14 +13,51 @@ from mss import MSS
 from PIL import Image
 
 from .game_state import classify_screen, is_death_screen, results_progress_ratio
-from .platform_control import (
-    GAME_PATH,
-    click_client,
-    find_game_window,
-    focus_window,
-    game_client_bbox,
-    send_jump,
-)
+from .platform_control import PlatformBackend, Win32Platform, validate_game_path
+from .state_machine import ScreenState, StateMachine
+
+ENVIRONMENT_VERSION = "phase1-contract-v1"
+OBSERVATION_CONTRACT_VERSION = "observation-v1"
+OBSERVATION_LAYOUT = "HWC"
+ACTION_CONTRACT_VERSION = "action-v1"
+REWARD_CONTRACT_VERSION = "reward-provisional-v1"
+
+
+class CaptureBackend(Protocol):
+    """Minimal screen-capture interface required by the environment."""
+
+    def grab(self, monitor: Any) -> Any:
+        """Capture the requested screen rectangle."""
+        ...
+
+    def close(self) -> None:
+        """Release capture resources."""
+        ...
+
+
+class EmergencyStop:
+    """Thread-safe latch for an operator-controlled episode stop."""
+
+    def __init__(self) -> None:
+        """Create a clear emergency-stop latch."""
+
+        self._event = Event()
+
+    def request(self) -> None:
+        """Request immediate suppression of future actions."""
+
+        self._event.set()
+
+    def clear(self) -> None:
+        """Clear the latch before starting a new controlled run."""
+
+        self._event.clear()
+
+    @property
+    def requested(self) -> bool:
+        """Return whether an operator has requested an emergency stop."""
+
+        return self._event.is_set()
 
 
 class GeometryDashEnv(gym.Env):
@@ -46,6 +84,12 @@ class GeometryDashEnv(gym.Env):
         reset_timeout: float = 3.0,
         reset_settle: float = 1.0,
         reset_stable_frames: int = 3,
+        focus_on_reset: bool = True,
+        focus_on_action: bool = True,
+        max_action_rate: float | None = 30.0,
+        emergency_stop: EmergencyStop | None = None,
+        platform_backend: PlatformBackend | None = None,
+        capture_backend: CaptureBackend | None = None,
     ) -> None:
         """Create a pixel-based environment with validated timing settings."""
         if observation_size[0] <= 0 or observation_size[1] <= 0:
@@ -59,6 +103,8 @@ class GeometryDashEnv(gym.Env):
                 "reset_timeout must be positive, reset_settle cannot be negative, "
                 "and reset_stable_frames must be positive"
             )
+        if max_action_rate is not None and max_action_rate <= 0:
+            raise ValueError("max_action_rate must be positive when configured")
         self.observation_size = observation_size
         self.fps = fps
         self.frame_interval = 1.0 / fps
@@ -68,11 +114,18 @@ class GeometryDashEnv(gym.Env):
         self.reset_timeout = reset_timeout
         self.reset_settle = reset_settle
         self.reset_stable_frames = reset_stable_frames
-        self._screen = MSS()
+        self.focus_on_reset = focus_on_reset
+        self.focus_on_action = focus_on_action
+        self.max_action_rate = max_action_rate
+        self.emergency_stop = emergency_stop or EmergencyStop()
+        self._screen: CaptureBackend = cast(CaptureBackend, capture_backend or MSS())
+        self._platform = platform_backend or Win32Platform()
+        self._state_machine = StateMachine()
         self._hwnd = None
         self._bbox: tuple[int, int, int, int] | None = None
         self._episode_active = False
         self._step_count = 0
+        self._last_action_time: float | None = None
         self._frame_buffer: deque[np.ndarray] = deque(maxlen=frame_stack)
         self.action_space = gym.spaces.Discrete(2)
         observation_shape = (observation_size[1], observation_size[0], 3)
@@ -90,22 +143,34 @@ class GeometryDashEnv(gym.Env):
         self._screen.close()
 
     def _ensure_window(self) -> None:
-        if not GAME_PATH.is_file():
-            raise FileNotFoundError(f"Geometry Dash executable not found: {GAME_PATH}")
-        self._hwnd = find_game_window()
+        game_path = self._platform.game_path
+        validate_game_path(game_path, require_exists=True)
+        self._hwnd = self._platform.find_game_window()
         if self._hwnd is None:
             raise RuntimeError(
                 "No visible Geometry Dash window found. Start the game first."
             )
-        focus_window(self._hwnd)
-        self._bbox = game_client_bbox(self._hwnd)
+        if self.focus_on_reset:
+            self._platform.focus_window(self._hwnd)
+        self._bbox = self._platform.game_client_bbox(self._hwnd)
 
     def _capture(self) -> Image.Image:
         if self._hwnd is None:
             raise RuntimeError("Environment is not connected to a game window")
-        current_bbox = game_client_bbox(self._hwnd)
+        if not self._platform.is_window(self._hwnd):
+            self._ensure_window()
+            if self._hwnd is None:
+                raise RuntimeError("Geometry Dash window disappeared during capture")
+        current_bbox = self._platform.game_client_bbox(self._hwnd)
         if current_bbox != self._bbox:
+            previous_bbox = self._bbox
             self._bbox = current_bbox
+            self._episode_active = False
+            raise RuntimeError(
+                "Geometry Dash client area changed during an episode; "
+                f"previous_bbox={previous_bbox}, current_bbox={current_bbox}; "
+                "reset required"
+            )
         if self._bbox is None:
             raise RuntimeError("Geometry Dash client bounding box is unavailable")
         left, top, right, bottom = self._bbox
@@ -152,6 +217,18 @@ class GeometryDashEnv(gym.Env):
             if last_state == "gameplay_or_transition":
                 stable_frames += 1
                 if stable_frames >= self.reset_stable_frames:
+                    if self._state_machine.state in {
+                        ScreenState.RESETTING,
+                        ScreenState.RESULTS,
+                    }:
+                        self._state_machine.transition(
+                            ScreenState.ATTEMPT_INTRO,
+                            reason="level-like frame observed after reset",
+                        )
+                    self._state_machine.transition(
+                        ScreenState.GAMEPLAY,
+                        reason="gameplay frame stability threshold reached",
+                    )
                     return image
             else:
                 stable_frames = 0
@@ -169,6 +246,29 @@ class GeometryDashEnv(gym.Env):
         if remaining > 0:
             time.sleep(remaining)
 
+    def _enforce_action_rate(self) -> None:
+        """Throttle dispatches so a control bug cannot flood the game."""
+
+        if self.max_action_rate is None:
+            self._last_action_time = time.monotonic()
+            return
+        interval = 1.0 / self.max_action_rate
+        now = time.monotonic()
+        if self._last_action_time is not None:
+            remaining = interval - (now - self._last_action_time)
+            if remaining > 0:
+                time.sleep(remaining)
+        self._last_action_time = time.monotonic()
+
+    def _check_emergency_stop(self) -> None:
+        """Stop the episode before dispatch if the operator latch is set."""
+
+        if self.emergency_stop.requested:
+            self._episode_active = False
+            raise RuntimeError(
+                "Emergency stop requested; episode halted and input suppressed"
+            )
+
     def reset(
         self,
         *,
@@ -177,7 +277,24 @@ class GeometryDashEnv(gym.Env):
     ) -> tuple[np.ndarray, dict[str, object]]:
         """Start or retry an episode and return the first pixel observation."""
 
+        resettable_states = {
+            ScreenState.DISCONNECTED,
+            ScreenState.MAIN_MENU,
+            ScreenState.RESULTS,
+            ScreenState.LEVEL_COMPLETE,
+            ScreenState.ERROR,
+        }
+        if self._state_machine.state not in resettable_states:
+            raise RuntimeError(
+                "Reset input is suppressed until a resettable state is validated "
+                f"(screen_state={self._state_machine.state.value})"
+            )
         super().reset(seed=seed)
+        self._state_machine = StateMachine()
+        self._state_machine.start(
+            ScreenState.RESETTING,
+            reason="reset requested",
+        )
         self._ensure_window()
         hwnd = self._hwnd
         if hwnd is None:
@@ -185,10 +302,18 @@ class GeometryDashEnv(gym.Env):
         image = self._capture()
         screen_state = classify_screen(image)
         if screen_state == "results":
-            click_client(hwnd)
+            self._state_machine.transition(
+                ScreenState.RESULTS,
+                reason="results detector matched before reset click",
+            )
+            self._platform.click_client(hwnd)
             time.sleep(self.reset_settle)
             image = self._wait_for_ready_gameplay()
         elif screen_state == "gameplay_or_transition":
+            self._state_machine.transition(
+                ScreenState.ATTEMPT_INTRO,
+                reason="level-like frame observed before reset wait",
+            )
             image = self._wait_for_ready_gameplay()
         else:
             raise RuntimeError(
@@ -196,10 +321,26 @@ class GeometryDashEnv(gym.Env):
                 f"detected screen_state={screen_state}"
             )
 
+        if self._state_machine.state == ScreenState.ATTEMPT_INTRO:
+            self._state_machine.transition(
+                ScreenState.GAMEPLAY,
+                reason="reset wait returned a ready frame",
+            )
+
         self._episode_active = True
         self._step_count = 0
+        self._last_action_time = None
+        transition = self._state_machine.history[-1]
         return self._reset_observation(image), {
-            "screen_state": "gameplay_or_transition",
+            "environment_version": ENVIRONMENT_VERSION,
+            "observation_contract_version": OBSERVATION_CONTRACT_VERSION,
+            "observation_layout": OBSERVATION_LAYOUT,
+            "action_contract_version": ACTION_CONTRACT_VERSION,
+            "reward_contract_version": REWARD_CONTRACT_VERSION,
+            "screen_state": self._state_machine.state.value,
+            "previous_state": transition.previous.value,
+            "transition_reason": transition.reason,
+            "detector_confidence": transition.confidence,
             "observation_size": self.observation_size,
             "frame_skip": self.frame_skip,
             "frame_stack": self.frame_stack,
@@ -213,23 +354,36 @@ class GeometryDashEnv(gym.Env):
 
         if not self._episode_active or self._hwnd is None:
             raise RuntimeError("Call reset() before step()")
+        if self._state_machine.state != ScreenState.GAMEPLAY:
+            self._episode_active = False
+            raise RuntimeError(
+                "Actions are suppressed outside GAMEPLAY "
+                f"(screen_state={self._state_machine.state.value})"
+            )
         hwnd = self._hwnd
         if not self.action_space.contains(action):
             raise ValueError("action must be 0 (no-op) or 1 (jump)")
         action = int(action)
 
+        self._check_emergency_stop()
+        self._enforce_action_rate()
         if action == 1:
-            send_jump(hwnd)
+            self._platform.send_jump(hwnd, ensure_focus=self.focus_on_action)
         image: Image.Image | None = None
         terminated = False
         frames_elapsed = 0
         frame_deadline = time.perf_counter() + self.frame_interval
         for _ in range(self.frame_skip):
+            self._check_emergency_stop()
             self._wait_for_frame_deadline(frame_deadline)
             image = self._capture()
             frames_elapsed += 1
             if is_death_screen(image):
                 terminated = True
+                self._state_machine.transition(
+                    ScreenState.RESULTS,
+                    reason="terminal results detector matched",
+                )
                 break
             frame_deadline += self.frame_interval
 
@@ -252,7 +406,27 @@ class GeometryDashEnv(gym.Env):
             terminated,
             truncated,
             {
-                "screen_state": "results" if terminated else "gameplay_or_transition",
+                "environment_version": ENVIRONMENT_VERSION,
+                "observation_contract_version": OBSERVATION_CONTRACT_VERSION,
+                "observation_layout": OBSERVATION_LAYOUT,
+                "action_contract_version": ACTION_CONTRACT_VERSION,
+                "reward_contract_version": REWARD_CONTRACT_VERSION,
+                "screen_state": self._state_machine.state.value,
+                "previous_state": (
+                    self._state_machine.history[-1].previous.value
+                    if self._state_machine.history
+                    else None
+                ),
+                "transition_reason": (
+                    self._state_machine.history[-1].reason
+                    if self._state_machine.history
+                    else None
+                ),
+                "detector_confidence": (
+                    self._state_machine.history[-1].confidence
+                    if self._state_machine.history
+                    else None
+                ),
                 "frames_elapsed": frames_elapsed,
                 "decision_step": self._step_count,
                 "truncated": truncated,

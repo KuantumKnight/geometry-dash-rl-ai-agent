@@ -18,7 +18,7 @@ env.close()
 
 ## Observation
 
-The environment captures the game client as RGB pixels and resizes each frame to `160×90`. The returned NumPy array has shape `(90, 160, 3)` and dtype `uint8`.
+The environment captures the game client as RGB pixels and resizes each frame to `160×90`. The returned NumPy array has shape `(90, 160, 3)` and dtype `uint8`. The canonical layout is RGB `HWC`; channel-first consumers must transpose it in an explicit wrapper rather than changing the environment contract.
 
 This is observation v1. The environment can optionally stack the most recent
 frames with `frame_stack=4`, returning shape `(4, 90, 160, 3)` in
@@ -48,6 +48,6 @@ The next reward design must use per-step `progress_delta`, not absolute progress
 
 Capture remains paced at 60 FPS by default using monotonic frame deadlines. The environment repeats each chosen action for `frame_skip=4` frames, so the policy targets approximately 15 decisions per second while the pixel timing remains available. Set `frame_skip=1` for one decision per captured frame.
 
-The default time limit is `max_steps=900` decisions, or approximately 60 seconds at the default settings. Reaching the limit returns `truncated=True`.
+The default time limit is `max_steps=900` decisions. The historical measured rate of 11.99 decisions/sec implies approximately 75 seconds, not 60; the actual wall time varies with capture and scheduling load. Reaching the limit returns `truncated=True`.
 
 This is intentionally not the final reward design. The next iteration should add continuous progress tracking and evaluate the environment with a non-learning baseline once the interaction loop is stable.

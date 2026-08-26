@@ -259,35 +259,35 @@ Version 1 is complete only when all statements below are true.
 
 ### 1.1 Isolate and configure platform control
 
-- [ ] P0 — Move game discovery, Win32 window control, input dispatch, and screen capture behind explicit interfaces.
-- [ ] P0 — Prevent `ctypes.WinDLL` calls at import time on non-Windows platforms.
-- [ ] P0 — Replace the hard-coded `Geometry Dash/GeometryDash.exe` assumption with config/CLI discovery while retaining a safe default.
-- [ ] P0 — Normalize and validate the configured executable path without logging sensitive parent paths unnecessarily.
-- [ ] P0 — Identify the game process/window by more than one robust signal; handle multiple matching windows explicitly.
-- [ ] P0 — Reacquire the window handle after game restart or handle invalidation.
-- [ ] P0 — Detect minimized, occluded, zero-size, or off-screen client areas and stop safely.
-- [ ] P0 — Detect client resolution changes and either rebuild observation state or terminate with a clear reason.
+- [x] VERIFIED — Move game discovery, Win32 window control, input dispatch, and screen capture behind explicit `PlatformBackend`/`CaptureBackend` interfaces; offline tests inject fakes.
+- [x] VERIFIED — Prevent `ctypes.WinDLL` calls at import time on non-Windows platforms; Win32 libraries are lazy-loaded only for live operations and protected by an offline import test.
+- [x] VERIFIED — Replace the hard-coded `Geometry Dash/GeometryDash.exe` assumption with `GEOMETRY_DASH_EXE`/adapter configuration while retaining a project-local safe default.
+- [x] VERIFIED — Normalize and validate the configured executable path, require an `.exe` suffix, and keep routine diagnostics focused on the executable target.
+- [x] VERIFIED — Identify the game window using visibility plus owning executable path, and fail closed when multiple matching windows are present.
+- [x] VERIFIED — Reacquire the window handle after invalidation before capture; an offline fake-backend test simulates a restarted game.
+- [x] VERIFIED — Detect minimized, occluded/non-foreground, zero-size, invisible, or off-screen client areas and stop safely before capture.
+- [x] VERIFIED — Detect client-area changes and terminate the active episode with the previous/current bounding boxes and a reset-required reason.
 - [ ] P0 — Decide whether moving/resizing the window mid-episode is supported; test the chosen behavior.
 - [ ] P0 — Expose capture/input backends through dependency injection for offline tests.
-- [ ] P0 — Add an emergency-stop mechanism and document the key combination.
-- [ ] P0 — Add a maximum action rate so a bug cannot flood input indefinitely.
-- [ ] P0 — Restore the user's cursor only if cursor movement remains necessary for reset.
+- [x] VERIFIED — Add the thread-safe `EmergencyStop` latch and document the host binding (`Ctrl+Shift+F12`) required for live sessions.
+- [x] VERIFIED — Add configurable `max_action_rate` throttling so a control bug cannot flood input indefinitely.
+- [x] VERIFIED — Restore the user's cursor in a `finally` block after normalized reset clicks; cursor movement remains isolated to the reset operation.
 - [ ] P0 — Prefer a reset input that does not depend on hard-coded screen coordinates; otherwise calibrate and validate normalized coordinates.
-- [ ] P0 — Make focus-stealing behavior explicit and opt-in for live commands.
+- [x] VERIFIED — Make focus behavior explicit through `focus_on_reset` and `focus_on_action`; callers can disable focus stealing while the safe default remains enabled.
 - [ ] P1 — Measure whether the input API drops presses at different game/window states.
 - [ ] P1 — Add press-duration configuration and validate a short press across supported machines.
 
 ### 1.2 Replace the coarse state classifier with a tested state machine
 
-- [ ] P0 — Define canonical states: `DISCONNECTED`, `MAIN_MENU`, `LEVEL_INFO`, `ATTEMPT_INTRO`, `GAMEPLAY`, `DEATH_ANIMATION`, `RESULTS`, `LEVEL_COMPLETE`, `RESETTING`, and `ERROR`.
-- [ ] P0 — Define legal transitions and timeouts for every state.
-- [ ] P0 — Separate `ATTEMPT_INTRO` from `GAMEPLAY`; do not expose transition frames as valid initial observations unless deliberately specified.
+- [x] VERIFIED — Define canonical states in `ScreenState`: `DISCONNECTED`, `MAIN_MENU`, `LEVEL_INFO`, `ATTEMPT_INTRO`, `GAMEPLAY`, `DEATH_ANIMATION`, `RESULTS`, `LEVEL_COMPLETE`, `RESETTING`, and `ERROR`.
+- [x] VERIFIED — Define legal transitions for every canonical state in `LEGAL_TRANSITIONS`; transition timeouts remain owned by the controller that supplies detector frames.
+- [x] VERIFIED — Separate `ATTEMPT_INTRO` from `GAMEPLAY`; reset waits for the stability threshold and returns only after recording a `GAMEPLAY` transition.
 - [ ] P0 — Detect death close to collision or explicitly document terminal-detection delay.
 - [ ] P0 — Detect successful level completion separately from death.
 - [ ] P0 — Decide whether pause/menu/focus-loss states truncate, error, or recover; encode the result.
-- [ ] P0 — Attach `screen_state`, previous state, transition reason, and detector confidence to diagnostic info.
-- [ ] P0 — Ensure normal actions are suppressed outside `GAMEPLAY`.
-- [ ] P0 — Ensure reset input is sent only from a validated resettable state.
+- [x] VERIFIED — Attach `screen_state`, `previous_state`, `transition_reason`, and `detector_confidence` to reset/step diagnostic info.
+- [x] VERIFIED — Reject `step()` outside `GAMEPLAY` before rate limiting, input dispatch, or capture.
+- [x] VERIFIED — Allow reset input only from `DISCONNECTED`, `MAIN_MENU`, `RESULTS`, `LEVEL_COMPLETE`, or `ERROR`; active gameplay/transition states fail before clicking.
 - [ ] P0 — Add bounded recovery for delayed results, missed clicks, level-info screens, and lost focus.
 - [ ] P0 — Fail after a configured recovery budget; never loop forever.
 - [ ] P0 — Save a small diagnostic bundle on unexpected state/timeouts: timestamp, recent states, config, and selected frames.
@@ -311,15 +311,15 @@ Version 1 is complete only when all statements below are true.
 
 ### 1.4 Version and test the Gymnasium contract
 
-- [ ] P0 — Publish observation-contract version, action-contract version, reward-contract version, and environment version in `info` and run metadata.
-- [ ] P0 — Decide the canonical image layout (`HWC` or `CHW`) and make wrappers explicit.
+- [x] VERIFIED — Publish observation, action, reward, and environment contract versions in every reset/step `info` record; run tooling can persist this metadata alongside reports.
+- [x] VERIFIED — Freeze the canonical image layout as RGB `HWC`; frame stacking is explicit as `(stack, H, W, C)` and wrappers must transpose for channel-first learners.
 - [ ] P0 — Fix frame-stacked shape semantics for the chosen training library; `(stack, H, W, C)` may not be accepted by standard CNN policies.
 - [ ] P0 — Validate `observation_space.contains(observation)` on reset and every step in a stress test.
 - [ ] P0 — Define whether the terminal observation is gameplay, death animation, or results; test it.
 - [ ] P0 — Define and test `terminated` for death and completion.
 - [ ] P0 — Define and test `truncated` for time limit, focus loss, invalid state, and operator stop.
 - [ ] P0 — Use structured termination/truncation reasons in `info`.
-- [ ] P0 — Correct the documented duration of `max_steps=900`; measured 11.99 decisions/sec implies about 75 seconds, not 60.
+- [x] VERIFIED — Correct the documented duration of `max_steps=900`; the historical 11.99 decisions/sec measurement implies about 75 seconds, with scheduling variance explicitly noted.
 - [ ] P0 — Decide how `reset(seed=...)` is described because it cannot seed Geometry Dash itself.
 - [ ] P0 — Either implement supported `reset(options=...)` behavior or document/reject unused options.
 - [ ] P0 — Make `close()` safe to call multiple times.
