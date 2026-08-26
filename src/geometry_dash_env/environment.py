@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from collections import deque
-from typing import ClassVar
+from typing import Any, ClassVar, Protocol, cast
 
 import gymnasium as gym
 import numpy as np
@@ -13,13 +13,21 @@ from PIL import Image
 
 from .game_state import classify_screen, is_death_screen, results_progress_ratio
 from .platform_control import (
-    GAME_PATH,
-    click_client,
-    find_game_window,
-    focus_window,
-    game_client_bbox,
-    send_jump,
+    PlatformBackend,
+    Win32Platform,
 )
+
+
+class CaptureBackend(Protocol):
+    """Minimal screen-capture interface required by the environment."""
+
+    def grab(self, monitor: Any) -> Any:
+        """Capture the requested screen rectangle."""
+        ...
+
+    def close(self) -> None:
+        """Release capture resources."""
+        ...
 
 
 class GeometryDashEnv(gym.Env):
@@ -46,6 +54,8 @@ class GeometryDashEnv(gym.Env):
         reset_timeout: float = 3.0,
         reset_settle: float = 1.0,
         reset_stable_frames: int = 3,
+        platform_backend: PlatformBackend | None = None,
+        capture_backend: CaptureBackend | None = None,
     ) -> None:
         """Create a pixel-based environment with validated timing settings."""
         if observation_size[0] <= 0 or observation_size[1] <= 0:
@@ -68,7 +78,8 @@ class GeometryDashEnv(gym.Env):
         self.reset_timeout = reset_timeout
         self.reset_settle = reset_settle
         self.reset_stable_frames = reset_stable_frames
-        self._screen = MSS()
+        self._screen: CaptureBackend = cast(CaptureBackend, capture_backend or MSS())
+        self._platform = platform_backend or Win32Platform()
         self._hwnd = None
         self._bbox: tuple[int, int, int, int] | None = None
         self._episode_active = False
@@ -90,20 +101,21 @@ class GeometryDashEnv(gym.Env):
         self._screen.close()
 
     def _ensure_window(self) -> None:
-        if not GAME_PATH.is_file():
-            raise FileNotFoundError(f"Geometry Dash executable not found: {GAME_PATH}")
-        self._hwnd = find_game_window()
+        game_path = self._platform.game_path
+        if not game_path.is_file():
+            raise FileNotFoundError(f"Geometry Dash executable not found: {game_path}")
+        self._hwnd = self._platform.find_game_window()
         if self._hwnd is None:
             raise RuntimeError(
                 "No visible Geometry Dash window found. Start the game first."
             )
-        focus_window(self._hwnd)
-        self._bbox = game_client_bbox(self._hwnd)
+        self._platform.focus_window(self._hwnd)
+        self._bbox = self._platform.game_client_bbox(self._hwnd)
 
     def _capture(self) -> Image.Image:
         if self._hwnd is None:
             raise RuntimeError("Environment is not connected to a game window")
-        current_bbox = game_client_bbox(self._hwnd)
+        current_bbox = self._platform.game_client_bbox(self._hwnd)
         if current_bbox != self._bbox:
             self._bbox = current_bbox
         if self._bbox is None:
@@ -185,7 +197,7 @@ class GeometryDashEnv(gym.Env):
         image = self._capture()
         screen_state = classify_screen(image)
         if screen_state == "results":
-            click_client(hwnd)
+            self._platform.click_client(hwnd)
             time.sleep(self.reset_settle)
             image = self._wait_for_ready_gameplay()
         elif screen_state == "gameplay_or_transition":
@@ -219,7 +231,7 @@ class GeometryDashEnv(gym.Env):
         action = int(action)
 
         if action == 1:
-            send_jump(hwnd)
+            self._platform.send_jump(hwnd)
         image: Image.Image | None = None
         terminated = False
         frames_elapsed = 0

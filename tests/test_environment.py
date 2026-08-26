@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 from typing import Any, cast
 from unittest.mock import patch
 
@@ -21,17 +22,54 @@ def results_image() -> Image.Image:
 
 
 class FakeScreen:
-    def grab(self, _monitor):
+    def grab(self, monitor: Any) -> Any:
+        del monitor
         return None
 
     def close(self) -> None:
         pass
 
 
+class FakePlatform:
+    """Offline platform adapter used to exercise environment orchestration."""
+
+    game_path = Path("fake-GeometryDash.exe")
+
+    def __init__(self) -> None:
+        self.bbox: tuple[int, int, int, int] = (0, 0, 800, 600)
+        self.jump_calls: list[Any] = []
+        self.click_calls: list[Any] = []
+
+    def find_game_window(self):
+        return cast(Any, 123)
+
+    def game_client_bbox(self, hwnd: Any) -> tuple[int, int, int, int]:
+        del hwnd
+        return self.bbox
+
+    def focus_window(self, hwnd: Any) -> None:
+        del hwnd
+        pass
+
+    def focus_window_if_needed(self, hwnd: Any) -> None:
+        del hwnd
+        pass
+
+    def send_jump(self, hwnd) -> None:
+        self.jump_calls.append(hwnd)
+
+    def click_client(self, hwnd) -> None:
+        self.click_calls.append(hwnd)
+
+
 class EnvironmentTests(unittest.TestCase):
     def make_env(self, **kwargs) -> GeometryDashEnv:
-        with patch("geometry_dash_env.environment.MSS", return_value=FakeScreen()):
-            env = GeometryDashEnv(**kwargs)
+        self.platform = FakePlatform()
+        env = GeometryDashEnv(
+            platform_backend=self.platform,
+            capture_backend=FakeScreen(),
+            **kwargs,
+        )
         self.addCleanup(env.close)
         return env
 
@@ -102,14 +140,13 @@ class EnvironmentTests(unittest.TestCase):
         env = self.make_env(frame_skip=1)
         self.activate(env)
         with (
-            patch("geometry_dash_env.environment.send_jump") as send_jump,
             patch.object(env, "_wait_for_frame_deadline"),
             patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
             patch("geometry_dash_env.environment.is_death_screen", return_value=False),
         ):
             observation, reward, terminated, truncated, _info = env.step(1)
 
-        send_jump.assert_called_once_with(123)
+        self.assertEqual(self.platform.jump_calls, [123])
         self.assertEqual(observation.shape, (90, 160, 3))
         self.assertEqual(reward, 0.0)
         self.assertFalse(terminated)
@@ -160,12 +197,9 @@ class EnvironmentTests(unittest.TestCase):
         env = self.make_env()
         env._hwnd = cast(Any, 123)
         env._bbox = (0, 0, 800, 600)
+        self.platform.bbox = (20, 30, 660, 510)
         shot = type("Shot", (), {"size": (640, 480), "rgb": b""})()
         with (
-            patch(
-                "geometry_dash_env.environment.game_client_bbox",
-                return_value=(20, 30, 660, 510),
-            ),
             patch.object(env._screen, "grab", return_value=shot),
             patch(
                 "geometry_dash_env.environment.Image.frombytes",

@@ -7,7 +7,7 @@ import os
 import time
 from ctypes import wintypes
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 GAME_PATH_ENV = "GEOMETRY_DASH_EXE"
 DEFAULT_GAME_PATH = Path.cwd() / "Geometry Dash" / "GeometryDash.exe"
@@ -155,11 +155,11 @@ def window_process_path(hwnd: wintypes.HWND) -> Path | None:
         kernel32.CloseHandle(process_handle)
 
 
-def find_game_window() -> wintypes.HWND | None:
+def find_game_window(game_path: Path | None = None) -> wintypes.HWND | None:
     """Find a visible top-level window owned by the configured executable."""
 
     user32, _ = _load_win32()
-    target_path = normalized_path(GAME_PATH)
+    target_path = normalized_path(game_path or GAME_PATH)
     matching_windows: list[wintypes.HWND] = []
 
     enum_windows_proc = ctypes.WINFUNCTYPE(
@@ -249,3 +249,72 @@ def click_client(
     time.sleep(0.05)
     user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
     user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+
+
+class PlatformBackend(Protocol):
+    """Interface used by the environment for window discovery and input."""
+
+    game_path: Path
+
+    def find_game_window(self) -> wintypes.HWND | None:
+        """Return the configured live game window, if present."""
+        ...
+
+    def game_client_bbox(self, hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
+        """Return the current client rectangle in screen coordinates."""
+        ...
+
+    def focus_window(self, hwnd: wintypes.HWND) -> None:
+        """Bring the game window to the foreground."""
+        ...
+
+    def focus_window_if_needed(self, hwnd: wintypes.HWND) -> None:
+        """Restore focus only when the game is not foreground."""
+        ...
+
+    def send_jump(self, hwnd: wintypes.HWND) -> None:
+        """Dispatch one configured jump press."""
+        ...
+
+    def click_client(self, hwnd: wintypes.HWND) -> None:
+        """Click the normalized reset control."""
+        ...
+
+
+class Win32Platform:
+    """Default platform adapter used for live Geometry Dash control."""
+
+    def __init__(self, game_path: Path | None = None) -> None:
+        """Create an adapter for the configured Geometry Dash executable."""
+
+        self.game_path = game_path or GAME_PATH
+
+    def find_game_window(self) -> wintypes.HWND | None:
+        """Find a visible window owned by this adapter's executable."""
+
+        return find_game_window(self.game_path)
+
+    def game_client_bbox(self, hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
+        """Return the current client rectangle."""
+
+        return game_client_bbox(hwnd)
+
+    def focus_window(self, hwnd: wintypes.HWND) -> None:
+        """Bring the game window to the foreground."""
+
+        focus_window(hwnd)
+
+    def focus_window_if_needed(self, hwnd: wintypes.HWND) -> None:
+        """Restore focus only when required."""
+
+        focus_window_if_needed(hwnd)
+
+    def send_jump(self, hwnd: wintypes.HWND) -> None:
+        """Dispatch one short jump press."""
+
+        send_jump(hwnd)
+
+    def click_client(self, hwnd: wintypes.HWND) -> None:
+        """Click the default normalized reset location."""
+
+        click_client(hwnd)

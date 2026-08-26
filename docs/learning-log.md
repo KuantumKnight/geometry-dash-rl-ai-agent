@@ -653,6 +653,10 @@ Pinned `pip-audit` in the dev dependency group and added a weekly/manual Windows
 
 Moved `user32` and `kernel32` loading behind a live-operation guard. Offline imports now remain inert, and a regression test protects this boundary so Linux-based tooling can import the package without attempting Win32 calls.
 
+## 2026-08-26 — Added injectable platform and capture boundaries
+
+The environment now depends on small `PlatformBackend` and `CaptureBackend` protocols. The default adapter remains Win32/MSS, while tests can inject deterministic fakes without opening a game window or sending input.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
