@@ -182,3 +182,21 @@ Added a results-screen progress-bar estimator. A terminated episode now receives
 ### Reasoning
 
 This gives the agent a meaningful distinction between dying at 1% and dying at 50% without pretending that raw screen motion is progress. The next improvement is to validate this estimator across more levels and add continuous progress tracking if the game exposes a reliable signal during gameplay.
+
+## 2026-08-26 — Removed per-action focus latency
+
+### Implementation
+
+Changed the input path so `reset()`/`_ensure_window()` focuses Geometry Dash once, while `send_key()` only sends the key event. Reduced the Space key hold from 50 ms to 5 ms.
+
+### Reasoning
+
+Focusing before every jump added roughly 250 ms of avoidable latency. With `frame_skip=4` at 60 FPS, the target is now approximately 15 environment decisions per second instead of paying the focus delay on every action. PPO/DQN work is intentionally still deferred.
+
+### Next measurement
+
+The next milestone is a repeatable environment smoke test of about 100 random actions, measuring step time, decision rate, and failures. The interaction change must first be confirmed by a live jump test.
+
+### Live validation
+
+The direct jump command completed successfully. A controlled environment check then returned a `(90, 160, 3)` observation from `reset()` and completed `step(1)` across four frames with `terminated=False` and `truncated=False`. One sample took about 194 ms; this is only a sanity check, not the final throughput result.

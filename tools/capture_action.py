@@ -177,16 +177,15 @@ def game_client_bbox(hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
 
 
 def send_key(hwnd: wintypes.HWND, virtual_key: int) -> None:
-    """Focus the game and send one virtual-key press."""
+    """Send one virtual-key press to the already-focused game window."""
 
-    focus_window(hwnd)
     USER32.keybd_event(virtual_key, 0, 0, 0)
-    time.sleep(0.05)
+    time.sleep(0.005)
     USER32.keybd_event(virtual_key, 0, KEYEVENTF_KEYUP, 0)
 
 
 def send_jump(hwnd: wintypes.HWND) -> None:
-    """Focus the game and send a short space-bar press."""
+    """Send a short space-bar press to the already-focused game window."""
 
     send_key(hwnd, VK_SPACE)
 
