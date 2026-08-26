@@ -63,6 +63,15 @@ The final environment passed 9 unit tests, completed a 100-step benchmark at 83.
 - [x] Keep the initial action space as `Discrete(2)`
 - [ ] Add hold/release actions only when supporting ship, wave, UFO, or robot modes
 
+## Phase 4 — Reward design
+
+- [x] Use the provisional terminal reward `-1 + progress_ratio`
+- [ ] Obtain a reliable per-step progress measurement
+- [ ] Replace absolute progress reward with `progress_delta`
+- [ ] Add a small survival reward only after timing and progress are validated
+- [ ] Add distinct death and level-completion rewards
+- [ ] Compare sparse terminal and shaped reward behavior with the same baseline
+
 ## Stage 4 — Iteration and evaluation
 
 - [ ] Improve observations, rewards, or model architecture based on evidence

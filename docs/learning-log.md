@@ -473,3 +473,15 @@ The initial action space remains `gymnasium.spaces.Discrete(2)`:
 - `1` = jump
 
 This is sufficient for cube gameplay. Hold/release actions are intentionally deferred until ship, wave, UFO, or robot modes are added. No action-space code was expanded in this step.
+
+## 2026-08-26 — Defined the Phase 4 reward direction
+
+### Baseline
+
+The current terminal reward remains `-1 + progress_ratio`. It is useful for validating death detection and distinguishing early from late failures, but it is sparse and cannot teach fine-grained movement efficiently.
+
+### Future shaping
+
+The target design is based on `progress_delta`: a small survival reward, positive reward for newly achieved forward progress, a death penalty, and a larger completion reward. Absolute progress must not be rewarded repeatedly because the agent could receive credit for remaining at the same location.
+
+No reward code was changed. First we need a reliable per-step progress measurement; otherwise shaping would add noise rather than learning signal.

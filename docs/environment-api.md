@@ -42,6 +42,8 @@ robot—are explicitly supported.
 
 The `progress_ratio` is estimated from the normal-mode green progress bar on the results screen and is included in `info`. For example, an attempt ending at 50% receives approximately `-0.5`. This is a terminal progress signal, not yet a continuous reward.
 
+The next reward design must use per-step `progress_delta`, not absolute progress. Reusing absolute progress would allow repeated observations at the same location to receive reward without actual advancement. Survival, death, and completion shaping remain deferred until a reliable per-step progress signal exists.
+
 ## Timing
 
 Capture remains paced at 60 FPS by default using monotonic frame deadlines. The environment repeats each chosen action for `frame_skip=4` frames, so the policy targets approximately 15 decisions per second while the pixel timing remains available. Set `frame_skip=1` for one decision per captured frame.
