@@ -118,3 +118,15 @@ Added `tools/game_state.py` with a normalized pixel heuristic and `tools/scan_ep
 ### Limitation
 
 This is a baseline calibrated on one clean episode, not a final general detector. It must be tested across more levels, window sizes, and death animations before being used inside a training environment.
+
+## 2026-08-26 — Full screen-state map
+
+### Result
+
+The latest 20-second episode contains the complete control flow from main menu to level selection, attempt transition, gameplay, death animation, results, retry transition, and a second gameplay segment.
+
+### Design consequence
+
+Only `GAMEPLAY` should be exposed as a learning observation. Menu, level-info, attempt-intro, death-animation, and results screens belong to the environment controller and should not be mixed into the policy’s training data.
+
+See [screen-state-map.md](screen-state-map.md) for the sampled frame ranges and proposed state flow.
