@@ -568,3 +568,7 @@ Pinned Ruff 0.16.4, Pyright 1.1.411, Coverage.py 7.15.4, and pre-commit 4.6.2 in
 Added `.github/workflows/quality.yml`, a Windows matrix for the explicitly supported Python 3.12 and 3.13 interpreters. The workflow installs from `uv.lock`, runs formatting, linting, type checking, offline tests with coverage, and package build as separate steps, and asserts that no proprietary Geometry Dash directory is present.
 
 The first pre-commit run fixed trailing whitespace in two pre-existing documentation files. After that cleanup, pre-commit passed. A new nullable-window guard briefly broke two reset tests whose mocks did not model `_ensure_window()`; the tests were corrected to provide a fake handle, and the full test suite passed again.
+
+## 2026-08-26 — Preserved the pre-refactor prototype baseline
+
+Created the annotated tag `prototype-baseline-8d4e496` at commit `8d4e496` (`baseline: add non-learning policy comparison`). The tag is the fixed comparison point for packaging, quality-gate, and future environment-hardening changes; it contains no later refactor or CI files.
