@@ -300,3 +300,29 @@ The complete benchmark improved from 165.23 ms to 127.00 ms mean step time. Howe
 ### Correctness check
 
 Compared the vectorized feature values with the previous pixel-loop calculation across 407 saved frames: maximum feature difference was `0.000000000000`, with zero mismatches.
+
+## 2026-08-26 — Added offline detector benchmark
+
+### Implementation
+
+Added `tools/benchmark_detector_offline.py`, which compares the old pixel-loop implementation with the current NumPy implementation on saved PNG frames. Image loading is outside the timed sections; Geometry Dash, MSS capture, sleeping, reset, and the environment are not involved.
+
+### Scope
+
+The benchmark runs multiple alternating timed passes per frame and checks feature equivalence at the same time. This isolates whether vectorization made the detector itself faster before changing frame pacing.
+
+### Offline result
+
+Command: `py -3.13 tools\\benchmark_detector_offline.py --repeats 5`
+
+```text
+frames:             407
+repeats:            5
+old mean/frame:     10.3118 ms
+new mean/frame:     4.7971 ms
+speedup:            2.15x
+old/new mismatches: 0
+max feature diff:   0.000000000000
+```
+
+The NumPy implementation is 2.15× faster in the isolated detector benchmark. The earlier live profile was noisy because capture and other live components varied substantially; frame pacing remains a separate, future change.
