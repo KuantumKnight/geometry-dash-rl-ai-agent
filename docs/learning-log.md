@@ -621,6 +621,10 @@ Added `tests/test_offline_cli.py`. It runs the episode scanner and offline detec
 
 Added `tests/test_live_cli_contract.py`. A jump capture invoked with a deliberately missing `GEOMETRY_DASH_EXE` exits nonzero before waiting for a window or sending input, and includes the exact missing path in its actionable error message.
 
+## 2026-08-26 — Locked public CLI help and exit codes
+
+Added `tests/test_cli_help.py` for all ten public tools. Each `--help` path exits 0 with usage text, and each deliberately unknown option exits 2, providing a stable parser contract for scripts and CI.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

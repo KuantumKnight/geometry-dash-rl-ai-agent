@@ -162,7 +162,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Add `scripts/dev.ps1` commands for `setup`, `format`, `lint`, `typecheck`, `test`, `test-offline`, `test-live`, `benchmark`, `train`, and `evaluate`; future train/evaluate tasks fail closed with exit code 2 until implemented.
 - [x] VERIFIED — Prove offline CLI help works with a deliberately missing `GEOMETRY_DASH_EXE`; `tests/test_offline_cli.py` covers episode scan and detector benchmark paths.
 - [x] VERIFIED — Test that a live capture command fails before input with an actionable missing-executable message in `tests/test_live_cli_contract.py`.
-- [ ] P0 — Add `--help` examples and validate every public CLI's exit codes.
+- [x] VERIFIED — Add `--help` examples and test help/invalid-option exit codes for all ten public tools in `tests/test_cli_help.py`.
 - [ ] P1 — Add shell completion only after CLI names and flags stabilize.
 
 ### 0.4 Add code-quality gates
