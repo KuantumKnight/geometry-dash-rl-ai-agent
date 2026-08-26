@@ -265,7 +265,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Normalize and validate the configured executable path, require an `.exe` suffix, and keep routine diagnostics focused on the executable target.
 - [x] VERIFIED — Identify the game window using visibility plus owning executable path, and fail closed when multiple matching windows are present.
 - [x] VERIFIED — Reacquire the window handle after invalidation before capture; an offline fake-backend test simulates a restarted game.
-- [ ] P0 — Detect minimized, occluded, zero-size, or off-screen client areas and stop safely.
+- [x] VERIFIED — Detect minimized, occluded/non-foreground, zero-size, invisible, or off-screen client areas and stop safely before capture.
 - [ ] P0 — Detect client resolution changes and either rebuild observation state or terminate with a clear reason.
 - [ ] P0 — Decide whether moving/resizing the window mid-episode is supported; test the chosen behavior.
 - [ ] P0 — Expose capture/input backends through dependency injection for offline tests.

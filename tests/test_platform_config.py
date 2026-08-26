@@ -11,6 +11,7 @@ from typing import Any, cast
 from geometry_dash_env.platform_control import (
     resolve_game_path,
     select_game_window,
+    validate_client_bbox,
     validate_game_path,
 )
 
@@ -54,6 +55,27 @@ class PlatformConfigTests(unittest.TestCase):
         """A single process-owned visible window is safe to select."""
 
         self.assertEqual(select_game_window(cast(Any, [42])), 42)
+
+    def test_client_bbox_rejects_minimized_window(self) -> None:
+        """Minimized windows cannot provide valid pixels."""
+
+        with self.assertRaisesRegex(RuntimeError, "minimized"):
+            validate_client_bbox((0, 0, 800, 600), minimized=True)
+
+    def test_client_bbox_rejects_off_screen_area(self) -> None:
+        """Capture must remain inside the virtual desktop bounds."""
+
+        with self.assertRaisesRegex(RuntimeError, "outside"):
+            validate_client_bbox(
+                (0, 0, 1200, 600),
+                screen_bounds=(0, 0, 800, 600),
+            )
+
+    def test_client_bbox_rejects_non_foreground_window(self) -> None:
+        """A covered/non-foreground client is unsafe to sample."""
+
+        with self.assertRaisesRegex(RuntimeError, "occluded"):
+            validate_client_bbox((0, 0, 800, 600), foreground=False)
 
 
 if __name__ == "__main__":

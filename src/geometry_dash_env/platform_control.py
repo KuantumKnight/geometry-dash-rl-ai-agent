@@ -44,6 +44,10 @@ MOUSEEVENTF_LEFTDOWN = 0x0002
 MOUSEEVENTF_LEFTUP = 0x0004
 PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 SW_RESTORE = 9
+SM_XVIRTUALSCREEN = 76
+SM_YVIRTUALSCREEN = 77
+SM_CXVIRTUALSCREEN = 78
+SM_CYVIRTUALSCREEN = 79
 
 
 class RECT(ctypes.Structure):
@@ -91,6 +95,8 @@ def _load_win32() -> tuple[Any, Any]:
         USER32.IsWindow.restype = wintypes.BOOL
         USER32.IsIconic.argtypes = [wintypes.HWND]
         USER32.IsIconic.restype = wintypes.BOOL
+        USER32.GetSystemMetrics.argtypes = [ctypes.c_int]
+        USER32.GetSystemMetrics.restype = ctypes.c_int
         USER32.GetWindowThreadProcessId.argtypes = [
             wintypes.HWND,
             ctypes.POINTER(wintypes.DWORD),
@@ -201,6 +207,39 @@ def is_window(hwnd: wintypes.HWND) -> bool:
     return bool(user32.IsWindow(hwnd))
 
 
+def validate_client_bbox(
+    bbox: tuple[int, int, int, int],
+    *,
+    minimized: bool = False,
+    visible: bool = True,
+    foreground: bool = True,
+    screen_bounds: tuple[int, int, int, int] | None = None,
+) -> tuple[int, int, int, int]:
+    """Reject client rectangles that cannot produce a safe screen capture."""
+
+    left, top, right, bottom = bbox
+    if minimized:
+        raise RuntimeError("Geometry Dash window is minimized")
+    if not visible:
+        raise RuntimeError("Geometry Dash window is not visible")
+    if not foreground:
+        raise RuntimeError("Geometry Dash window is occluded or not foreground")
+    if right <= left or bottom <= top:
+        raise RuntimeError("Geometry Dash window has no visible client area")
+    if screen_bounds is not None:
+        screen_left, screen_top, screen_right, screen_bottom = screen_bounds
+        if (
+            left < screen_left
+            or top < screen_top
+            or right > screen_right
+            or bottom > screen_bottom
+        ):
+            raise RuntimeError(
+                "Geometry Dash client area is outside the virtual screen"
+            )
+    return bbox
+
+
 def find_game_window(game_path: Path | None = None) -> wintypes.HWND | None:
     """Find a visible top-level window owned by the configured executable."""
 
@@ -257,9 +296,17 @@ def game_client_bbox(hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
 
     width = client_rect.right - client_rect.left
     height = client_rect.bottom - client_rect.top
-    if width <= 0 or height <= 0:
-        raise RuntimeError("Geometry Dash window has no visible client area")
-    return (origin.x, origin.y, origin.x + width, origin.y + height)
+    screen_left = user32.GetSystemMetrics(SM_XVIRTUALSCREEN)
+    screen_top = user32.GetSystemMetrics(SM_YVIRTUALSCREEN)
+    screen_right = screen_left + user32.GetSystemMetrics(SM_CXVIRTUALSCREEN)
+    screen_bottom = screen_top + user32.GetSystemMetrics(SM_CYVIRTUALSCREEN)
+    return validate_client_bbox(
+        (origin.x, origin.y, origin.x + width, origin.y + height),
+        minimized=bool(user32.IsIconic(hwnd)),
+        visible=bool(user32.IsWindowVisible(hwnd)),
+        foreground=user32.GetForegroundWindow() == hwnd,
+        screen_bounds=(screen_left, screen_top, screen_right, screen_bottom),
+    )
 
 
 def send_key(hwnd: wintypes.HWND, virtual_key: int) -> None:

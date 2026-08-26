@@ -673,6 +673,10 @@ Window enumeration now evaluates every visible window owned by the configured ex
 
 Before capture, the environment now checks the cached HWND and reacquires the configured game window when Windows reports that the handle is invalid. The fake platform test covers this restart boundary without opening the game.
 
+## 2026-08-26 — Added capture safety bounds
+
+Win32 client-rectangle validation now rejects minimized, invisible, non-foreground/occluded, zero-size, and off-screen windows. This conservative foreground requirement prevents sampling pixels that may belong to another window.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
