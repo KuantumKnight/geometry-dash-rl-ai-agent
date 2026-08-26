@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+
+# Machine learning artifacts
+checkpoints/
+models/
+runs/
+wandb/
+*.pt
+*.pth
+*.ckpt
+
+# Editors and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
