@@ -14,7 +14,7 @@ This roadmap is intentionally incremental. Each stage should produce a working a
 - [ ] Capture a game frame
 - [ ] Send a no-op and jump action
 - [x] Detect a game-over state (baseline pixel heuristic)
-- [ ] Reset the game reliably
+- [x] Reset the game reliably (retry-button click validated)
 - [ ] Measure whether the interaction loop is fast and stable enough
 
 The jump action has been manually validated; the checklist remains open until it is covered by a repeatable test.

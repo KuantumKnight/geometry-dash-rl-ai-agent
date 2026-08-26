@@ -37,7 +37,7 @@ def death_screen_features(image: Image.Image) -> dict[str, float]:
     sampled = image.convert("RGB").resize((320, 180), Image.Resampling.BILINEAR)
     return {
         "bottom_green_ratio": _region_ratio(
-            sampled, (0.15, 0.42, 0.85, 0.78), _is_bright_green
+            sampled, (0.10, 0.65, 0.90, 0.95), _is_bright_green
         ),
         "progress_green_ratio": _region_ratio(
             sampled, (0.18, 0.18, 0.82, 0.30), _is_bright_green

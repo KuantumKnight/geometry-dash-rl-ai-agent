@@ -23,6 +23,8 @@ GAME_PATH = PROJECT_ROOT / "Geometry Dash" / "GeometryDash.exe"
 DEFAULT_OUTPUT = PROJECT_ROOT / "artifacts" / "frames"
 VK_SPACE = 0x20
 KEYEVENTF_KEYUP = 0x0002
+MOUSEEVENTF_LEFTDOWN = 0x0002
+MOUSEEVENTF_LEFTUP = 0x0004
 PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 SW_RESTORE = 9
 
@@ -64,6 +66,15 @@ USER32.ClientToScreen.restype = wintypes.BOOL
 USER32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
 USER32.SetForegroundWindow.argtypes = [wintypes.HWND]
 USER32.SetForegroundWindow.restype = wintypes.BOOL
+USER32.SetCursorPos.argtypes = [ctypes.c_int, ctypes.c_int]
+USER32.SetCursorPos.restype = wintypes.BOOL
+USER32.mouse_event.argtypes = [
+    wintypes.DWORD,
+    wintypes.DWORD,
+    wintypes.DWORD,
+    wintypes.DWORD,
+    ctypes.c_ulonglong,
+]
 
 KERNEL32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
 KERNEL32.OpenProcess.restype = wintypes.HANDLE
@@ -178,6 +189,21 @@ def send_jump(hwnd: wintypes.HWND) -> None:
     """Focus the game and send a short space-bar press."""
 
     send_key(hwnd, VK_SPACE)
+
+
+def click_client(
+    hwnd: wintypes.HWND, relative_x: float = 0.29, relative_y: float = 0.82
+) -> None:
+    """Click a normalized point inside the focused game client area."""
+
+    left, top, right, bottom = game_client_bbox(hwnd)
+    x = left + round((right - left) * relative_x)
+    y = top + round((bottom - top) * relative_y)
+    focus_window(hwnd)
+    USER32.SetCursorPos(x, y)
+    time.sleep(0.05)
+    USER32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+    USER32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 
 
 def capture_frame(path: Path, hwnd: wintypes.HWND) -> tuple[int, int]:

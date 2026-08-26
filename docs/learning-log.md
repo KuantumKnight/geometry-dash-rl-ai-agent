@@ -140,3 +140,15 @@ Added `tools/reset_episode.py`. It only sends `R` after the current frame is cla
 ### Not yet validated
 
 The controller has passed static checks but still needs a live test from a real results screen. The reset checklist remains open until the after-reset frame is confirmed as the next attempt and subsequent gameplay.
+
+### Layout bug found
+
+The first live test used an `800×600` game window. The results controls were lower than in the original `1359×768` calibration episode, so the detector looked at the wrong vertical region. The lower-green feature region was widened and made resolution-normalized before retrying the live reset.
+
+### Input finding
+
+On this Geometry Dash build, neither `R` nor Space cleared the results screen. The retry control must be clicked. The reset controller now clicks the normalized lower-left retry position after the `RESULTS` guard passes.
+
+### Live validation
+
+The reset controller successfully detected a real results screen, clicked retry, and produced an `after_reset.png` frame showing gameplay in Attempt 6. Reset is now validated for this window layout.

@@ -20,19 +20,16 @@ try:
         find_game_window,
         focus_window,
         game_client_bbox,
-        send_key,
+        click_client,
     )
     from .game_state import is_death_screen
 except ImportError:  # Direct execution: `py tools\\reset_episode.py`.
-    from capture_action import GAME_PATH, find_game_window, focus_window, game_client_bbox, send_key
+    from capture_action import GAME_PATH, find_game_window, focus_window, game_client_bbox, click_client
     from game_state import is_death_screen
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = PROJECT_ROOT / "artifacts" / "reset_checks"
-VK_R = 0x52
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -90,8 +87,8 @@ def main() -> None:
                 "Die in the level and wait for the results screen first."
             )
         before.save(output_dir / "results_before_reset.png")
-        print("RESULTS detected; sending R to retry.")
-        send_key(hwnd, VK_R)
+        print("RESULTS detected; clicking the retry button.")
+        click_client(hwnd)
 
         deadline = time.monotonic() + args.timeout
         cleared = False
