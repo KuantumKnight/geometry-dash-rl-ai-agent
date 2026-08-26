@@ -49,6 +49,7 @@ class GeometryDashEnv:
             raise ValueError("reset_timeout must be positive and reset_settle cannot be negative")
         self.observation_size = observation_size
         self.fps = fps
+        self.frame_interval = 1.0 / fps
         self.frame_skip = frame_skip
         self.max_steps = max_steps
         self.reset_timeout = reset_timeout
@@ -83,6 +84,13 @@ class GeometryDashEnv:
     def _observation(self, image: Image.Image) -> np.ndarray:
         resized = image.resize(self.observation_size, Image.Resampling.BILINEAR)
         return np.asarray(resized, dtype=np.uint8).copy()
+
+    def _wait_for_frame_deadline(self, deadline: float) -> None:
+        """Wait only until the next frame deadline, if computation is ahead."""
+
+        remaining = deadline - time.perf_counter()
+        if remaining > 0:
+            time.sleep(remaining)
 
     def reset(self) -> tuple[np.ndarray, dict[str, object]]:
         """Start or retry an episode and return the first pixel observation."""
@@ -125,13 +133,15 @@ class GeometryDashEnv:
         image = None
         terminated = False
         frames_elapsed = 0
+        frame_deadline = time.perf_counter() + self.frame_interval
         for _ in range(self.frame_skip):
-            time.sleep(1.0 / self.fps)
+            self._wait_for_frame_deadline(frame_deadline)
             image = self._capture()
             frames_elapsed += 1
             if is_death_screen(image):
                 terminated = True
                 break
+            frame_deadline += self.frame_interval
 
         self._step_count += 1
         truncated = not terminated and self._step_count >= self.max_steps

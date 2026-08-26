@@ -326,3 +326,26 @@ max feature diff:   0.000000000000
 ```
 
 The NumPy implementation is 2.15× faster in the isolated detector benchmark. The earlier live profile was noisy because capture and other live components varied substantially; frame pacing remains a separate, future change.
+
+## 2026-08-26 — Added deadline-based frame pacing
+
+### Implementation
+
+Replaced the fixed `sleep(1 / fps)` inside `step()` with a monotonic deadline schedule. Each frame waits only until its target deadline; capture and detection time are allowed to consume the interval without adding a second full sleep.
+
+### Benchmark
+
+With `frame_skip=4`, `fps=60`, and random actions using seed 42:
+
+```text
+steps:             100
+mean step time:    86.87 ms
+median step time:  86.65 ms
+min:               69.21 ms
+max:               103.77 ms
+decisions/sec:     11.51
+deaths:            1
+resets:            2
+```
+
+This improved the live baseline from 127.00 ms / 7.87 decisions/sec to 86.87 ms / 11.51 decisions/sec. The environment is now close to the initial 12–15 decisions/sec target; reset and capture reliability remain unfinished Phase 1 work.
