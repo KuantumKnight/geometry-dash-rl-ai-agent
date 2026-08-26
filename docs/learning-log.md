@@ -104,3 +104,17 @@ The recorder now stores both requested and measured FPS and uses the measured ra
 ### Implementation note
 
 The recorder uses a fast screen-grab backend for the 60 FPS video stream and saves lower-rate PNG samples by default. Use `--png-fps 60` when every frame is needed for an experiment; otherwise the video remains the complete pixel observation record while the samples support quick inspection.
+
+## 2026-08-26 — Baseline death detection
+
+### Evidence
+
+The clean episode `20260826T111858Z` contains gameplay frames followed by the static death/results overlay. The overlay has a dark central panel and bright green result controls; gameplay and the death animation do not share both properties.
+
+### Implementation
+
+Added `tools/game_state.py` with a normalized pixel heuristic and `tools/scan_episode.py` for offline transition checks. The detector currently identifies a frame as `dead/results` when the lower-center green ratio is above `0.04` and the center dark ratio is above `0.50`.
+
+### Limitation
+
+This is a baseline calibrated on one clean episode, not a final general detector. It must be tested across more levels, window sizes, and death animations before being used inside a training environment.

@@ -13,7 +13,7 @@ This roadmap is intentionally incremental. Each stage should produce a working a
 
 - [ ] Capture a game frame
 - [ ] Send a no-op and jump action
-- [ ] Detect a game-over state
+- [x] Detect a game-over state (baseline pixel heuristic)
 - [ ] Reset the game reliably
 - [ ] Measure whether the interaction loop is fast and stable enough
 
