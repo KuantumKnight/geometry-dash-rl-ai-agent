@@ -420,3 +420,21 @@ OK
 ```
 
 The unit tests run without Geometry Dash; the 50-death reset stress test and 100-capture stability check remain the live integration checks.
+
+## 2026-08-26 — Phase 1 environment completion
+
+### Final validation
+
+The completed environment loop now covers capture, observation conversion, action dispatch, death detection, reward, reset, and repeatable pacing. Final checks on `main`:
+
+```text
+unit tests:          9 passed
+benchmark steps:     100
+mean step time:      83.42 ms
+decisions/sec:       11.99
+reset stress deaths: 50
+reset failures:      0
+episode failures:    0
+```
+
+Phase 1 is complete. The next phase can establish a non-learning baseline, but PPO/DQN remains deferred until that baseline and evaluation protocol are defined.

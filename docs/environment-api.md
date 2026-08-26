@@ -34,7 +34,7 @@ The `progress_ratio` is estimated from the normal-mode green progress bar on the
 
 ## Timing
 
-Capture remains at 60 FPS by default. The environment repeats each chosen action for `frame_skip=4` frames, so the policy makes approximately 15 decisions per second while the pixel timing remains available. Set `frame_skip=1` for one decision per captured frame.
+Capture remains paced at 60 FPS by default using monotonic frame deadlines. The environment repeats each chosen action for `frame_skip=4` frames, so the policy targets approximately 15 decisions per second while the pixel timing remains available. Set `frame_skip=1` for one decision per captured frame.
 
 The default time limit is `max_steps=900` decisions, or approximately 60 seconds at the default settings. Reaching the limit returns `truncated=True`.
 

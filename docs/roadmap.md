@@ -11,21 +11,34 @@ This roadmap is intentionally incremental. Each stage should produce a working a
 
 ## Stage 1 — Game interaction prototype
 
-- [ ] Capture a game frame
-- [ ] Send a no-op and jump action
+- [x] Capture a game frame
+- [x] Send a no-op and jump action
 - [x] Detect a game-over state (baseline pixel heuristic)
 - [x] Reset the game reliably (retry-button click validated)
-- [ ] Measure whether the interaction loop is fast and stable enough
+- [x] Measure whether the interaction loop runs fast and stable enough
 
 The jump action has been manually validated; the checklist remains open until it is covered by a repeatable test.
 
 ## Stage 2 — Gym-style environment
 
-- [ ] Implement `reset()` and `step(action)`
-- [ ] Define the observation representation
-- [ ] Define the action space
-- [ ] Define reward and termination rules
-- [ ] Add a small manual smoke test
+- [x] Implement `reset()` and `step(action)`
+- [x] Define the observation representation
+- [x] Define the action space
+- [x] Define reward and termination rules
+- [x] Add a small manual smoke test
+
+## Phase 1 — Finish the environment
+
+- [x] Replace fixed frame sleeps with deadline-based pacing
+- [x] Reach approximately 12 decisions/sec with `frame_skip=4` at 60 FPS
+- [x] Complete 50 consecutive deaths and resets with zero reset failures
+- [x] Refresh capture bounds when the game window moves or resizes
+- [x] Expose Gymnasium-compatible action and observation spaces
+- [x] Add reset, jump, death, reward, timing, and capture contract tests
+
+### Final validation
+
+The final environment passed 9 unit tests, completed a 100-step benchmark at 83.42 ms mean step time / 11.99 decisions per second, and completed a 50-death stress run with zero reset failures. PPO/DQN and the non-learning baseline remain intentionally deferred to the next phase.
 
 ## Stage 3 — Baseline agent
 
