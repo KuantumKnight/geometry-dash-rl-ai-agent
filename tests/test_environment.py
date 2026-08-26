@@ -9,7 +9,16 @@ import gymnasium as gym
 import numpy as np
 from PIL import Image, ImageDraw
 
-from geometry_dash_env import EmergencyStop, GeometryDashEnv, ScreenState, StateMachine
+from geometry_dash_env import (
+    ACTION_CONTRACT_VERSION,
+    ENVIRONMENT_VERSION,
+    OBSERVATION_CONTRACT_VERSION,
+    REWARD_CONTRACT_VERSION,
+    EmergencyStop,
+    GeometryDashEnv,
+    ScreenState,
+    StateMachine,
+)
 from geometry_dash_env.game_state import is_death_screen
 
 GAMEPLAY_IMAGE = Image.new("RGB", (800, 600), (25, 40, 165))
@@ -133,6 +142,12 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(observation.dtype, np.uint8)
         self.assertTrue(env.observation_space.contains(observation))
         self.assertEqual(info["screen_state"], "gameplay")
+        self.assertEqual(info["environment_version"], ENVIRONMENT_VERSION)
+        self.assertEqual(
+            info["observation_contract_version"], OBSERVATION_CONTRACT_VERSION
+        )
+        self.assertEqual(info["action_contract_version"], ACTION_CONTRACT_VERSION)
+        self.assertEqual(info["reward_contract_version"], REWARD_CONTRACT_VERSION)
 
     def test_reset_rejects_main_menu(self) -> None:
         env = self.make_env()

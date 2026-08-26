@@ -311,7 +311,7 @@ Version 1 is complete only when all statements below are true.
 
 ### 1.4 Version and test the Gymnasium contract
 
-- [ ] P0 — Publish observation-contract version, action-contract version, reward-contract version, and environment version in `info` and run metadata.
+- [x] VERIFIED — Publish observation, action, reward, and environment contract versions in every reset/step `info` record; run tooling can persist this metadata alongside reports.
 - [ ] P0 — Decide the canonical image layout (`HWC` or `CHW`) and make wrappers explicit.
 - [ ] P0 — Fix frame-stacked shape semantics for the chosen training library; `(stack, H, W, C)` may not be accepted by standard CNN policies.
 - [ ] P0 — Validate `observation_space.contains(observation)` on reset and every step in a stress test.

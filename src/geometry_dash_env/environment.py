@@ -16,6 +16,11 @@ from .game_state import classify_screen, is_death_screen, results_progress_ratio
 from .platform_control import PlatformBackend, Win32Platform, validate_game_path
 from .state_machine import ScreenState, StateMachine
 
+ENVIRONMENT_VERSION = "phase1-contract-v1"
+OBSERVATION_CONTRACT_VERSION = "observation-v1"
+ACTION_CONTRACT_VERSION = "action-v1"
+REWARD_CONTRACT_VERSION = "reward-provisional-v1"
+
 
 class CaptureBackend(Protocol):
     """Minimal screen-capture interface required by the environment."""
@@ -326,6 +331,10 @@ class GeometryDashEnv(gym.Env):
         self._last_action_time = None
         transition = self._state_machine.history[-1]
         return self._reset_observation(image), {
+            "environment_version": ENVIRONMENT_VERSION,
+            "observation_contract_version": OBSERVATION_CONTRACT_VERSION,
+            "action_contract_version": ACTION_CONTRACT_VERSION,
+            "reward_contract_version": REWARD_CONTRACT_VERSION,
             "screen_state": self._state_machine.state.value,
             "previous_state": transition.previous.value,
             "transition_reason": transition.reason,
@@ -395,6 +404,10 @@ class GeometryDashEnv(gym.Env):
             terminated,
             truncated,
             {
+                "environment_version": ENVIRONMENT_VERSION,
+                "observation_contract_version": OBSERVATION_CONTRACT_VERSION,
+                "action_contract_version": ACTION_CONTRACT_VERSION,
+                "reward_contract_version": REWARD_CONTRACT_VERSION,
                 "screen_state": self._state_machine.state.value,
                 "previous_state": (
                     self._state_machine.history[-1].previous.value
