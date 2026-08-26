@@ -229,3 +229,33 @@ resets:            7
 ```
 
 This is the baseline measurement only. It shows that the current loop is slower than the initial 15 decisions/second target, while the first failed run also shows that reset reliability needs separate investigation. No optimization was made based on this result.
+
+## 2026-08-26 — Added component profiler
+
+### Implementation
+
+Added `tools/profile_env_step.py` to measure the existing per-frame sequence separately: the frame-rate sleep, MSS capture, `is_death_screen()` detection, and observation conversion. It also reports total frame time and unaccounted measurement overhead.
+
+### Scope
+
+This is profiling only. The detector, capture path, timing, and reset behavior were not replaced or optimized. The profiler uses the current environment methods and a fixed optional seed so the measurements can be repeated before changing code.
+
+### First profile
+
+Command: `py -3.13 tools\\profile_env_step.py --seed 42`
+
+The 100-frame profile completed with one detected death and two total resets:
+
+```text
+frames:             100
+mean sleep:         17.00 ms
+mean capture:       15.16 ms
+mean death detect:  9.32 ms
+mean observation:   2.05 ms
+mean frame total:   43.53 ms
+unaccounted:        0.01 ms
+deaths:             1
+resets:             2
+```
+
+The result explains the earlier roughly 168 ms decision time: four profiled frames total about 174 ms. The current detector is measurable at roughly 9 ms per frame, and capture is roughly 15 ms per frame. These are observations only; no optimization has been made yet.
