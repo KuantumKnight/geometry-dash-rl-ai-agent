@@ -131,7 +131,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Record CPython `3.13.14`, used by the successful locked test run, in `docs/experiment-environment.md`.
 - [ ] P0 — Record the Geometry Dash version from the in-game UI or store; the executable exposes no usable version metadata.
 - [ ] P0 — Record window mode, client resolution, VSync/FPS settings, level, character mode, and game speed.
-- [ ] P0 — Record `ffmpeg` version and whether video encoding was enabled for benchmark runs.
+- [x] VERIFIED — Record `ffmpeg 8.1.1-full_build-www.gyan.dev` and video-encoding provenance in `docs/experiment-environment.md`; the episode recorder encoded H.264 while benchmarks do not encode video.
 - [ ] P0 — Export a dependency snapshot only as historical evidence; do not treat the global environment as the new lock file.
 - [ ] P0 — Back up the selected local media outside `artifacts/` before any cleanup.
 - [ ] P0 — Add checksums for milestone videos and metadata so archived evidence can be verified later.

@@ -588,3 +588,7 @@ The local `GeometryDash.exe` has no usable Windows version-resource fields, and 
 ## 2026-08-26 — Recorded the live level while preserving settings uncertainty
 
 A focused screenshot confirmed `Stereo Madness`, an `800×600` client capture, `Attempt 305`, and a `1%` results state. Window mode, VSync/FPS, character mode, and game speed were not visible or recoverable, so `docs/experiment-environment.md` records them as open evidence gaps rather than treating the Python controller's 60 FPS target as a game setting.
+
+## 2026-08-26 — Recorded video encoder provenance
+
+Recorded `ffmpeg 8.1.1-full_build-www.gyan.dev` and verified the candidate episode as a 20-second, 1,200-frame H.264 MP4 at 800×600 and 60 FPS. Encoding was enabled for the recorder run; benchmark commands remain non-video measurements.

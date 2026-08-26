@@ -47,3 +47,7 @@ A focused live capture on 2026-08-26 visibly showed the `Stereo Madness` results
 | Game speed | Not visible in the capture | Open |
 
 The environment's own `fps=60` and `frame_skip=4` are Python controller settings, not evidence of the game's VSync or speed settings. The roadmap check remains open until the in-game settings are captured directly.
+
+## Video capture provenance
+
+The host provides `ffmpeg version 8.1.1-full_build-www.gyan.dev` (build dated 2026). The preserved candidate `artifacts/episodes/20260826T113120Z/episode.mp4` is an H.264 MP4 at `800×600`, 60 FPS, 20 seconds, and 1,200 frames. Video encoding was enabled for this episode recorder run; the benchmark tools themselves do not encode video.
