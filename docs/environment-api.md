@@ -26,4 +26,10 @@ The environment captures the game client as RGB pixels and resizes each frame to
 - Results screen detected: reward `-1.0`, `terminated=True`
 - `truncated` is always `False` in this smoke-test wrapper
 
-This is intentionally not the final reward design. The next iteration should add a time limit, a reliable gameplay-state classifier, progress-based reward, and a proper Gymnasium-compatible wrapper once the interaction loop is stable.
+## Timing
+
+Capture remains at 60 FPS by default. The environment repeats each chosen action for `frame_skip=4` frames, so the policy makes approximately 15 decisions per second while the pixel timing remains available. Set `frame_skip=1` for one decision per captured frame.
+
+The default time limit is `max_steps=900` decisions, or approximately 60 seconds at the default settings. Reaching the limit returns `truncated=True`.
+
+This is intentionally not the final reward design. The next iteration should add a reliable gameplay-state classifier, progress-based reward, and a proper Gymnasium-compatible wrapper once the interaction loop is stable.

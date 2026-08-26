@@ -162,3 +162,13 @@ Added `GeometryDashEnv` with `reset()` and `step(action)`, two discrete actions,
 ### Scope
 
 This wrapper proves the basic environment shape only. It does not yet include a progress reward, time limit, robust gameplay-state classification, or a learning algorithm.
+
+## 2026-08-26 — Temporal environment controls
+
+### Implementation
+
+Added configurable `frame_skip` and `max_steps`. The default environment captures at 60 FPS, repeats each action for four frames, and truncates an episode after 900 decisions.
+
+### Reasoning
+
+This separates visual capture rate from policy decision rate. The agent can later make decisions at roughly 15 Hz while preserving the game’s 60 FPS timing for action effects and video evidence.

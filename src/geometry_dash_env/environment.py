@@ -36,21 +36,28 @@ class GeometryDashEnv:
         *,
         observation_size: tuple[int, int] = (160, 90),
         fps: float = 60.0,
+        frame_skip: int = 4,
+        max_steps: int = 900,
         reset_timeout: float = 3.0,
         reset_settle: float = 0.5,
     ) -> None:
         if observation_size[0] <= 0 or observation_size[1] <= 0:
             raise ValueError("observation_size dimensions must be positive")
-        if fps <= 0 or reset_timeout <= 0 or reset_settle < 0:
-            raise ValueError("fps and reset_timeout must be positive")
+        if fps <= 0 or frame_skip <= 0 or max_steps <= 0:
+            raise ValueError("fps, frame_skip, and max_steps must be positive")
+        if reset_timeout <= 0 or reset_settle < 0:
+            raise ValueError("reset_timeout must be positive and reset_settle cannot be negative")
         self.observation_size = observation_size
         self.fps = fps
+        self.frame_skip = frame_skip
+        self.max_steps = max_steps
         self.reset_timeout = reset_timeout
         self.reset_settle = reset_settle
         self._screen = MSS()
         self._hwnd = None
         self._bbox: tuple[int, int, int, int] | None = None
         self._episode_active = False
+        self._step_count = 0
 
     def close(self) -> None:
         self._screen.close()
@@ -96,9 +103,11 @@ class GeometryDashEnv:
             image = self._capture()
 
         self._episode_active = True
+        self._step_count = 0
         return self._observation(image), {
             "screen_state": "gameplay_or_transition",
             "observation_size": self.observation_size,
+            "frame_skip": self.frame_skip,
         }
 
     def step(
@@ -113,12 +122,25 @@ class GeometryDashEnv:
 
         if action == 1:
             send_jump(self._hwnd)
-        time.sleep(1.0 / self.fps)
-        image = self._capture()
-        terminated = is_death_screen(image)
-        if terminated:
+        image = None
+        terminated = False
+        frames_elapsed = 0
+        for _ in range(self.frame_skip):
+            time.sleep(1.0 / self.fps)
+            image = self._capture()
+            frames_elapsed += 1
+            if is_death_screen(image):
+                terminated = True
+                break
+
+        self._step_count += 1
+        truncated = not terminated and self._step_count >= self.max_steps
+        if terminated or truncated:
             self._episode_active = False
         reward = -1.0 if terminated else 0.0
-        return self._observation(image), reward, terminated, False, {
+        return self._observation(image), reward, terminated, truncated, {
             "screen_state": "results" if terminated else "gameplay_or_transition",
+            "frames_elapsed": frames_elapsed,
+            "decision_step": self._step_count,
+            "truncated": truncated,
         }
