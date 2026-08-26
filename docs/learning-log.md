@@ -86,3 +86,21 @@ Each recorded episode will keep both PNG frames and a local MP4 video. The MP4 i
 ### Repository policy
 
 Episode artifacts stay outside Git history because raw frames and videos can become large. Commit metadata, findings, and selected summaries; keep videos locally or attach selected milestone clips to GitHub Releases later.
+
+## 2026-08-26 — Target 60 FPS pixel observations
+
+### Decision
+
+New episode recordings will target 60 FPS. The earlier 5 FPS setting was useful for debugging the capture path, but it is too sparse for fast Geometry Dash collisions and jump timing.
+
+### Important distinction
+
+The recorder captures pixels at the game rate, but the eventual RL policy does not have to make a new decision every frame. We can preserve 60 FPS observations while using frame-skip or action-repeat to control training cost after measuring the environment.
+
+### Measurement rule
+
+The recorder now stores both requested and measured FPS and uses the measured rate when encoding the video. This prevents a slow capture loop from creating a video that plays faster than the real episode.
+
+### Implementation note
+
+The recorder uses a fast screen-grab backend for the 60 FPS video stream and saves lower-rate PNG samples by default. Use `--png-fps 60` when every frame is needed for an experiment; otherwise the video remains the complete pixel observation record while the samples support quick inspection.
