@@ -281,7 +281,7 @@ Version 1 is complete only when all statements below are true.
 
 - [x] VERIFIED — Define canonical states in `ScreenState`: `DISCONNECTED`, `MAIN_MENU`, `LEVEL_INFO`, `ATTEMPT_INTRO`, `GAMEPLAY`, `DEATH_ANIMATION`, `RESULTS`, `LEVEL_COMPLETE`, `RESETTING`, and `ERROR`.
 - [x] VERIFIED — Define legal transitions for every canonical state in `LEGAL_TRANSITIONS`; transition timeouts remain owned by the controller that supplies detector frames.
-- [ ] P0 — Separate `ATTEMPT_INTRO` from `GAMEPLAY`; do not expose transition frames as valid initial observations unless deliberately specified.
+- [x] VERIFIED — Separate `ATTEMPT_INTRO` from `GAMEPLAY`; reset waits for the stability threshold and returns only after recording a `GAMEPLAY` transition.
 - [ ] P0 — Detect death close to collision or explicitly document terminal-detection delay.
 - [ ] P0 — Detect successful level completion separately from death.
 - [ ] P0 — Decide whether pause/menu/focus-loss states truncate, error, or recover; encode the result.
