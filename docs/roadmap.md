@@ -184,7 +184,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Add a Windows GitHub Actions workflow for clean installation and offline tests.
 - [x] VERIFIED — Add formatting, linting, type checking, unit tests, and package build as separate visible CI steps.
 - [x] VERIFIED — Cache dependencies without caching the project environment itself.
-- [ ] P0 — Upload test and coverage reports on failure.
+- [x] VERIFIED — Configure CI to upload verbose test output, Coverage.py XML, and raw coverage data when a Windows quality job fails.
 - [x] VERIFIED — Run a matrix only for explicitly supported Python versions (3.12 and 3.13).
 - [x] VERIFIED — Prove CI never looks for or downloads Geometry Dash.
 - [x] VERIFIED — Keep live-game tests out of the default offline test discovery.

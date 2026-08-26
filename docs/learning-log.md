@@ -641,6 +641,10 @@ Added `docs/quality-review.md`. The review records Ruff unused-name checks, the 
 
 Updated `tools/reset_episode.py` so a timeout reports that the results screen did not clear after clicking retry, matching the implementation. The earlier “pressing R” sentence remains in the learning log only as a historical account of the first reset attempt and the later fix.
 
+## 2026-08-26 — Added CI failure evidence artifacts
+
+Updated `.github/workflows/quality.yml` to save verbose unittest output, `coverage.xml`, and raw `.coverage` data when a Windows quality job fails. Coverage rendering is attempted after tests even on failure, while the build remains a separate visible step.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
