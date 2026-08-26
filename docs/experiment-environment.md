@@ -51,3 +51,5 @@ The environment's own `fps=60` and `frame_skip=4` are Python controller settings
 ## Video capture provenance
 
 The host provides `ffmpeg version 8.1.1-full_build-www.gyan.dev` (build dated 2026). The preserved candidate `artifacts/episodes/20260826T113120Z/episode.mp4` is an H.264 MP4 at `800×600`, 60 FPS, 20 seconds, and 1,200 frames. Video encoding was enabled for this episode recorder run; the benchmark tools themselves do not encode video.
+
+The source video was copied before cleanup to the ignored local backup path `media-backups/20260826T113120Z/episode.mp4`. Source and backup are both 1,082,879 bytes and have SHA-256 `DDF0BFFA5B924B75238D9FDA7373BCC874E3133D5FC7BCD8C0FC294664EF48E9`.
