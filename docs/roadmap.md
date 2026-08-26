@@ -286,7 +286,7 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Detect successful level completion separately from death.
 - [ ] P0 — Decide whether pause/menu/focus-loss states truncate, error, or recover; encode the result.
 - [x] VERIFIED — Attach `screen_state`, `previous_state`, `transition_reason`, and `detector_confidence` to reset/step diagnostic info.
-- [ ] P0 — Ensure normal actions are suppressed outside `GAMEPLAY`.
+- [x] VERIFIED — Reject `step()` outside `GAMEPLAY` before rate limiting, input dispatch, or capture.
 - [ ] P0 — Ensure reset input is sent only from a validated resettable state.
 - [ ] P0 — Add bounded recovery for delayed results, missed clicks, level-info screens, and lost focus.
 - [ ] P0 — Fail after a configured recovery budget; never loop forever.

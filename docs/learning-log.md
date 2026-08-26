@@ -713,6 +713,10 @@ Reset orchestration now records `ATTEMPT_INTRO` while waiting for stable level f
 
 Reset and step info now expose the current/previous canonical states, transition reason, and optional detector confidence. This keeps state-machine evidence attached to the observation that caused each transition.
 
+## 2026-08-26 — Suppressed actions outside gameplay
+
+`step()` now checks the canonical state before rate limiting or dispatching input. Transition, reset, and error states fail closed with an explicit state name; an offline test confirms no jump reaches the platform backend.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

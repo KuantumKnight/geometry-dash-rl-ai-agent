@@ -9,7 +9,7 @@ import gymnasium as gym
 import numpy as np
 from PIL import Image, ImageDraw
 
-from geometry_dash_env import EmergencyStop, GeometryDashEnv
+from geometry_dash_env import EmergencyStop, GeometryDashEnv, ScreenState, StateMachine
 from geometry_dash_env.game_state import is_death_screen
 
 GAMEPLAY_IMAGE = Image.new("RGB", (800, 600), (25, 40, 165))
@@ -85,6 +85,10 @@ class EnvironmentTests(unittest.TestCase):
         env._episode_active = True
         env._hwnd = cast(Any, 123)
         env._bbox = (0, 0, 800, 600)
+        env._state_machine = StateMachine()
+        env._state_machine.start(ScreenState.RESETTING, reason="test reset")
+        env._state_machine.transition(ScreenState.ATTEMPT_INTRO, reason="test intro")
+        env._state_machine.transition(ScreenState.GAMEPLAY, reason="test gameplay")
 
     def test_spaces_match_observation_and_actions(self) -> None:
         env = self.make_env()
@@ -128,7 +132,7 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(observation.shape, (90, 160, 3))
         self.assertEqual(observation.dtype, np.uint8)
         self.assertTrue(env.observation_space.contains(observation))
-        self.assertEqual(info["screen_state"], "gameplay_or_transition")
+        self.assertEqual(info["screen_state"], "gameplay")
 
     def test_reset_rejects_main_menu(self) -> None:
         env = self.make_env()
@@ -204,6 +208,21 @@ class EnvironmentTests(unittest.TestCase):
 
         self.assertEqual(self.platform.jump_calls, [])
         self.assertFalse(env._episode_active)
+
+    def test_actions_are_suppressed_outside_gameplay(self) -> None:
+        """Transition frames never receive normal jump/no-op actions."""
+
+        env = self.make_env(frame_skip=1)
+        env._episode_active = True
+        env._hwnd = cast(Any, 123)
+        env._state_machine = StateMachine()
+        env._state_machine.start(ScreenState.RESETTING, reason="test reset")
+        env._state_machine.transition(ScreenState.ATTEMPT_INTRO, reason="test intro")
+
+        with self.assertRaisesRegex(RuntimeError, "outside GAMEPLAY"):
+            env.step(1)
+
+        self.assertEqual(self.platform.jump_calls, [])
 
     def test_death_detector_recognizes_results_and_rejects_gameplay(self) -> None:
         self.assertTrue(is_death_screen(results_image()))
