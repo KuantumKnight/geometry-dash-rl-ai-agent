@@ -18,7 +18,7 @@ env.close()
 
 ## Observation
 
-The environment captures the game client as RGB pixels and resizes each frame to `160×90`. The returned NumPy array has shape `(90, 160, 3)` and dtype `uint8`.
+The environment captures the game client as RGB pixels and resizes each frame to `160×90`. The returned NumPy array has shape `(90, 160, 3)` and dtype `uint8`. The canonical layout is RGB `HWC`; channel-first consumers must transpose it in an explicit wrapper rather than changing the environment contract.
 
 This is observation v1. The environment can optionally stack the most recent
 frames with `frame_stack=4`, returning shape `(4, 90, 160, 3)` in

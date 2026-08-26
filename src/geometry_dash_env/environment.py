@@ -18,6 +18,7 @@ from .state_machine import ScreenState, StateMachine
 
 ENVIRONMENT_VERSION = "phase1-contract-v1"
 OBSERVATION_CONTRACT_VERSION = "observation-v1"
+OBSERVATION_LAYOUT = "HWC"
 ACTION_CONTRACT_VERSION = "action-v1"
 REWARD_CONTRACT_VERSION = "reward-provisional-v1"
 
@@ -333,6 +334,7 @@ class GeometryDashEnv(gym.Env):
         return self._reset_observation(image), {
             "environment_version": ENVIRONMENT_VERSION,
             "observation_contract_version": OBSERVATION_CONTRACT_VERSION,
+            "observation_layout": OBSERVATION_LAYOUT,
             "action_contract_version": ACTION_CONTRACT_VERSION,
             "reward_contract_version": REWARD_CONTRACT_VERSION,
             "screen_state": self._state_machine.state.value,
@@ -406,6 +408,7 @@ class GeometryDashEnv(gym.Env):
             {
                 "environment_version": ENVIRONMENT_VERSION,
                 "observation_contract_version": OBSERVATION_CONTRACT_VERSION,
+                "observation_layout": OBSERVATION_LAYOUT,
                 "action_contract_version": ACTION_CONTRACT_VERSION,
                 "reward_contract_version": REWARD_CONTRACT_VERSION,
                 "screen_state": self._state_machine.state.value,

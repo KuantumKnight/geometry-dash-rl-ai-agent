@@ -729,6 +729,10 @@ Updated the API documentation to calculate `900 / 11.99 ≈ 75` seconds from the
 
 Reset and step info now carry stable observation (`observation-v1`), action (`action-v1`), reward (`reward-provisional-v1`), and environment (`phase1-contract-v1`) identifiers. These values are exported for report/metadata writers to persist with runs.
 
+## 2026-08-26 — Froze the image layout
+
+The observation contract explicitly declares RGB `HWC`; stacked observations remain `(stack, H, W, C)`. Channel-first training libraries must use a visible transpose wrapper, preserving a single source of truth for capture and tests.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

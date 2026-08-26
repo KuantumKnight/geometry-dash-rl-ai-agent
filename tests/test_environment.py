@@ -13,6 +13,7 @@ from geometry_dash_env import (
     ACTION_CONTRACT_VERSION,
     ENVIRONMENT_VERSION,
     OBSERVATION_CONTRACT_VERSION,
+    OBSERVATION_LAYOUT,
     REWARD_CONTRACT_VERSION,
     EmergencyStop,
     GeometryDashEnv,
@@ -146,6 +147,7 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(
             info["observation_contract_version"], OBSERVATION_CONTRACT_VERSION
         )
+        self.assertEqual(info["observation_layout"], OBSERVATION_LAYOUT)
         self.assertEqual(info["action_contract_version"], ACTION_CONTRACT_VERSION)
         self.assertEqual(info["reward_contract_version"], REWARD_CONTRACT_VERSION)
 
