@@ -576,3 +576,7 @@ Created the annotated tag `prototype-baseline-8d4e496` at commit `8d4e496` (`bas
 ## 2026-08-26 — Recorded the live experiment host fingerprint
 
 Added `docs/experiment-environment.md` with the observed Windows edition/build, CPU, GPUs and driver versions, installed RAM, active display, 150% scaling, 2560×1600/240 Hz display mode, and current 800×600 Geometry Dash client capture. The document explicitly distinguishes current-host evidence from historical-run equivalence and leaves unrecoverable in-game settings open rather than guessing.
+
+## 2026-08-26 — Recorded the locked test interpreter
+
+Added CPython `3.13.14` to the experiment fingerprint. This is the interpreter used by `uv run` for the successful 10-test run and package checks; the supported project range remains `>=3.12,<3.14`.

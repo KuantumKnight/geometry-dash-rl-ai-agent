@@ -19,6 +19,7 @@ Captured on 2026-08-26 from the Windows host running the local Geometry Dash pro
 | Windows scaling | 150% (`144` logical DPI) | `Win32_DesktopMonitor`; 96 DPI base |
 | Geometry Dash executable | Local `Geometry Dash/GeometryDash.exe`, 10,700,288 bytes, modified 2026-01-22 18:30:49 | File metadata; version-resource fields are empty |
 | Live client capture | `800×600` pixels in the current visible window | `game_client_bbox()` and focused screenshot |
+| Project Python | CPython `3.13.14` from the locked `.venv` | `uv run python --version` |
 
 ## Provenance limits
 
