@@ -264,7 +264,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Replace the hard-coded `Geometry Dash/GeometryDash.exe` assumption with `GEOMETRY_DASH_EXE`/adapter configuration while retaining a project-local safe default.
 - [x] VERIFIED — Normalize and validate the configured executable path, require an `.exe` suffix, and keep routine diagnostics focused on the executable target.
 - [x] VERIFIED — Identify the game window using visibility plus owning executable path, and fail closed when multiple matching windows are present.
-- [ ] P0 — Reacquire the window handle after game restart or handle invalidation.
+- [x] VERIFIED — Reacquire the window handle after invalidation before capture; an offline fake-backend test simulates a restarted game.
 - [ ] P0 — Detect minimized, occluded, zero-size, or off-screen client areas and stop safely.
 - [ ] P0 — Detect client resolution changes and either rebuild observation state or terminate with a clear reason.
 - [ ] P0 — Decide whether moving/resizing the window mid-episode is supported; test the chosen behavior.

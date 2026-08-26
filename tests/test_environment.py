@@ -36,16 +36,24 @@ class FakePlatform:
     game_path = Path("fake-GeometryDash.exe")
 
     def __init__(self) -> None:
+        self.game_path = (Path.cwd() / "Geometry Dash" / "GeometryDash.exe").resolve()
         self.bbox: tuple[int, int, int, int] = (0, 0, 800, 600)
+        self.valid = True
+        self.window_handle: Any = 123
         self.jump_calls: list[Any] = []
         self.click_calls: list[Any] = []
 
     def find_game_window(self):
-        return cast(Any, 123)
+        self.valid = True
+        return self.window_handle
 
     def game_client_bbox(self, hwnd: Any) -> tuple[int, int, int, int]:
         del hwnd
         return self.bbox
+
+    def is_window(self, hwnd: Any) -> bool:
+        del hwnd
+        return self.valid
 
     def focus_window(self, hwnd: Any) -> None:
         del hwnd
@@ -208,6 +216,26 @@ class EnvironmentTests(unittest.TestCase):
         ):
             env._capture()
         self.assertEqual(env._bbox, (20, 30, 660, 510))
+
+    def test_capture_reacquires_invalid_window_handle(self) -> None:
+        """A restarted game is reacquired before the next capture."""
+
+        env = self.make_env()
+        env._hwnd = cast(Any, 123)
+        env._bbox = (0, 0, 800, 600)
+        self.platform.valid = False
+        self.platform.window_handle = 456
+        shot = type("Shot", (), {"size": (800, 600), "rgb": b""})()
+        with (
+            patch.object(env._screen, "grab", return_value=shot),
+            patch(
+                "geometry_dash_env.environment.Image.frombytes",
+                return_value=GAMEPLAY_IMAGE,
+            ),
+        ):
+            env._capture()
+
+        self.assertEqual(env._hwnd, 456)
 
 
 if __name__ == "__main__":

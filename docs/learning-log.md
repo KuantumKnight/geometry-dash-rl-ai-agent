@@ -669,6 +669,10 @@ Executable selection now flows through `GEOMETRY_DASH_EXE` or the adapter constr
 
 Window enumeration now evaluates every visible window owned by the configured executable. A single match is selected; zero matches returns no target; multiple matches raise an actionable ambiguity error instead of sending input to an arbitrary window.
 
+## 2026-08-26 — Reacquired invalid window handles
+
+Before capture, the environment now checks the cached HWND and reacquires the configured game window when Windows reports that the handle is invalid. The fake platform test covers this restart boundary without opening the game.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

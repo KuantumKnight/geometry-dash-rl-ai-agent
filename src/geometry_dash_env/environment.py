@@ -111,6 +111,10 @@ class GeometryDashEnv(gym.Env):
     def _capture(self) -> Image.Image:
         if self._hwnd is None:
             raise RuntimeError("Environment is not connected to a game window")
+        if not self._platform.is_window(self._hwnd):
+            self._ensure_window()
+            if self._hwnd is None:
+                raise RuntimeError("Geometry Dash window disappeared during capture")
         current_bbox = self._platform.game_client_bbox(self._hwnd)
         if current_bbox != self._bbox:
             self._bbox = current_bbox

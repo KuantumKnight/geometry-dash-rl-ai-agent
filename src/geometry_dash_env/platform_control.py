@@ -87,6 +87,8 @@ def _load_win32() -> tuple[Any, Any]:
         USER32.EnumWindows.restype = wintypes.BOOL
         USER32.IsWindowVisible.argtypes = [wintypes.HWND]
         USER32.IsWindowVisible.restype = wintypes.BOOL
+        USER32.IsWindow.argtypes = [wintypes.HWND]
+        USER32.IsWindow.restype = wintypes.BOOL
         USER32.IsIconic.argtypes = [wintypes.HWND]
         USER32.IsIconic.restype = wintypes.BOOL
         USER32.GetWindowThreadProcessId.argtypes = [
@@ -190,6 +192,13 @@ def select_game_window(
             "Multiple visible Geometry Dash windows match the configured executable"
         )
     return matching_windows[0] if matching_windows else None
+
+
+def is_window(hwnd: wintypes.HWND) -> bool:
+    """Return whether a Win32 window handle is still valid."""
+
+    user32, _ = _load_win32()
+    return bool(user32.IsWindow(hwnd))
 
 
 def find_game_window(game_path: Path | None = None) -> wintypes.HWND | None:
@@ -300,6 +309,10 @@ class PlatformBackend(Protocol):
         """Return the current client rectangle in screen coordinates."""
         ...
 
+    def is_window(self, hwnd: wintypes.HWND) -> bool:
+        """Return whether a previously acquired handle remains valid."""
+        ...
+
     def focus_window(self, hwnd: wintypes.HWND) -> None:
         """Bring the game window to the foreground."""
         ...
@@ -339,6 +352,11 @@ class Win32Platform:
         """Bring the game window to the foreground."""
 
         focus_window(hwnd)
+
+    def is_window(self, hwnd: wintypes.HWND) -> bool:
+        """Return whether this window handle remains valid."""
+
+        return is_window(hwnd)
 
     def focus_window_if_needed(self, hwnd: wintypes.HWND) -> None:
         """Restore focus only when required."""
