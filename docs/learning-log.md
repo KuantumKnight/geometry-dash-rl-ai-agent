@@ -657,6 +657,10 @@ Moved `user32` and `kernel32` loading behind a live-operation guard. Offline imp
 
 The environment now depends on small `PlatformBackend` and `CaptureBackend` protocols. The default adapter remains Win32/MSS, while tests can inject deterministic fakes without opening a game window or sending input.
 
+## 2026-08-26 — Configured executable discovery
+
+Executable selection now flows through `GEOMETRY_DASH_EXE` or the adapter constructor, with the project-local `Geometry Dash/GeometryDash.exe` path retained as a safe default. Offline tests cover relative overrides and missing executable behavior.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

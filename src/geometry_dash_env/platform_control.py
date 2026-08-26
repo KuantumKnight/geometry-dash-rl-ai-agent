@@ -11,7 +11,32 @@ from typing import Any, Protocol
 
 GAME_PATH_ENV = "GEOMETRY_DASH_EXE"
 DEFAULT_GAME_PATH = Path.cwd() / "Geometry Dash" / "GeometryDash.exe"
-GAME_PATH = Path(os.environ.get(GAME_PATH_ENV, DEFAULT_GAME_PATH)).expanduser()
+
+
+def resolve_game_path(value: str | Path | None = None) -> Path:
+    """Resolve an executable override or the safe project-local default."""
+
+    raw_value = value if value is not None else os.environ.get(GAME_PATH_ENV)
+    candidate = Path(raw_value) if raw_value else DEFAULT_GAME_PATH
+    return candidate.expanduser().resolve(strict=False)
+
+
+def validate_game_path(
+    path: str | Path,
+    *,
+    require_exists: bool = False,
+) -> Path:
+    """Normalize an executable path and validate its Windows suffix/existence."""
+
+    resolved = resolve_game_path(path)
+    if resolved.suffix.lower() != ".exe":
+        raise ValueError("Geometry Dash executable path must end in .exe")
+    if require_exists and not resolved.is_file():
+        raise FileNotFoundError(f"Geometry Dash executable not found: {resolved}")
+    return resolved
+
+
+GAME_PATH = resolve_game_path()
 
 VK_SPACE = 0x20
 KEYEVENTF_KEYUP = 0x0002
@@ -287,7 +312,7 @@ class Win32Platform:
     def __init__(self, game_path: Path | None = None) -> None:
         """Create an adapter for the configured Geometry Dash executable."""
 
-        self.game_path = game_path or GAME_PATH
+        self.game_path = resolve_game_path(game_path or GAME_PATH)
 
     def find_game_window(self) -> wintypes.HWND | None:
         """Find a visible window owned by this adapter's executable."""

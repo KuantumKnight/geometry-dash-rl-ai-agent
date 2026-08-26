@@ -12,10 +12,7 @@ from mss import MSS
 from PIL import Image
 
 from .game_state import classify_screen, is_death_screen, results_progress_ratio
-from .platform_control import (
-    PlatformBackend,
-    Win32Platform,
-)
+from .platform_control import PlatformBackend, Win32Platform, validate_game_path
 
 
 class CaptureBackend(Protocol):
@@ -102,8 +99,7 @@ class GeometryDashEnv(gym.Env):
 
     def _ensure_window(self) -> None:
         game_path = self._platform.game_path
-        if not game_path.is_file():
-            raise FileNotFoundError(f"Geometry Dash executable not found: {game_path}")
+        validate_game_path(game_path, require_exists=True)
         self._hwnd = self._platform.find_game_window()
         if self._hwnd is None:
             raise RuntimeError(
