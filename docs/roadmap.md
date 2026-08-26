@@ -72,6 +72,14 @@ The final environment passed 9 unit tests, completed a 100-step benchmark at 83.
 - [ ] Add distinct death and level-completion rewards
 - [ ] Compare sparse terminal and shaped reward behavior with the same baseline
 
+## Phase 5 — Non-learning baseline
+
+- [x] Measure an always-no-op policy
+- [x] Measure a random-jump policy
+- [x] Measure a periodic-jump policy
+- [x] Record average progress, best progress, episode length, death rate, and reset failures
+- [x] Require future RL agents to beat the baseline on the same protocol
+
 ## Stage 4 — Iteration and evaluation
 
 - [ ] Improve observations, rewards, or model architecture based on evidence

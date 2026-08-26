@@ -485,3 +485,22 @@ The current terminal reward remains `-1 + progress_ratio`. It is useful for vali
 The target design is based on `progress_delta`: a small survival reward, positive reward for newly achieved forward progress, a death penalty, and a larger completion reward. Absolute progress must not be rewarded repeatedly because the agent could receive credit for remaining at the same location.
 
 No reward code was changed. First we need a reliable per-step progress measurement; otherwise shaping would add noise rather than learning signal.
+
+## 2026-08-26 — Started Phase 5 non-learning baseline
+
+Added `tools/baseline_agent.py` with three deliberately simple policies: always no-op, random jump, and jump every `N` decisions. It reports average terminal progress, best terminal progress, average episode length, death rate, progress sample count, and reset failures.
+
+The same seed, episode count, maximum episode length, and environment settings must be used for future RL comparisons. No learning algorithm is included, and baseline episodes are not automatically recorded as video unless they produce a visually meaningful milestone.
+
+## 2026-08-26 — Phase 5 baseline result
+
+Command: `py -3.13 tools\\baseline_agent.py --episodes 10 --max-steps 300 --period 6 --seed 42`
+
+```text
+policy    episodes  avg_progress  best_progress  avg_length  death_rate  resets_failed
+noop            10         0.010          0.019      10.400      100.0%             0
+random          10         0.019          0.048      49.700      100.0%             0
+periodic        10         0.009          0.011      10.400      100.0%             0
+```
+
+Random actions were strongest, reaching 4.8% best terminal progress and 1.9% average terminal progress. All policies died in every episode, and all reset attempts succeeded. Future RL comparisons must use this same protocol and beat these measurements. This routine baseline run produced no new montage-worthy video; the media archive remains active for future milestones.
