@@ -371,3 +371,27 @@ episode failures:  0
 ```
 
 The reset path completed 50 consecutive deaths and retries without a failure. Accidental menu/unknown screens are now detected and reported instead of being silently accepted as valid gameplay.
+
+## 2026-08-26 — Refreshed capture bounds during episodes
+
+### Implementation
+
+`_capture()` now refreshes the Geometry Dash client rectangle before every MSS grab and replaces the cached bounding box when the window moves or resizes. Reset already refreshes the window handle and bounds through `_ensure_window()`. The current bbox is also returned in `reset()` and `step()` info for diagnostics.
+
+Added `tools/verify_capture_stability.py` to check repeated captures, image sizes, and tracked bounding boxes.
+
+### Stability check
+
+Command: `py -3.13 tools\\verify_capture_stability.py --samples 100`
+
+```text
+samples:             100
+unique bounding boxes: 1
+unique image sizes:   1
+first bbox:           (63, 488, 863, 1088)
+last bbox:            (63, 488, 863, 1088)
+first image size:     (800, 600)
+last image size:      (800, 600)
+```
+
+The live window remained stable for 100 captures, and the implementation now detects movement or resize on the next capture instead of continuing with stale coordinates.

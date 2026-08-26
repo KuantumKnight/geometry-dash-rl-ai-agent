@@ -78,8 +78,13 @@ class GeometryDashEnv:
         self._bbox = game_client_bbox(self._hwnd)
 
     def _capture(self) -> Image.Image:
-        if self._bbox is None:
+        if self._hwnd is None:
             raise RuntimeError("Environment is not connected to a game window")
+        current_bbox = game_client_bbox(self._hwnd)
+        if current_bbox != self._bbox:
+            self._bbox = current_bbox
+        if self._bbox is None:
+            raise RuntimeError("Geometry Dash client bounding box is unavailable")
         left, top, right, bottom = self._bbox
         shot = self._screen.grab(
             {"left": left, "top": top, "width": right - left, "height": bottom - top}
@@ -148,6 +153,7 @@ class GeometryDashEnv:
             "screen_state": "gameplay_or_transition",
             "observation_size": self.observation_size,
             "frame_skip": self.frame_skip,
+            "capture_bbox": self._bbox,
         }
 
     def step(
@@ -187,4 +193,5 @@ class GeometryDashEnv:
             "decision_step": self._step_count,
             "truncated": truncated,
             "progress_ratio": progress_ratio,
+            "capture_bbox": self._bbox,
         }
