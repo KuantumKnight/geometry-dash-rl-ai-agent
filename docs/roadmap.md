@@ -127,7 +127,7 @@ Version 1 is complete only when all statements below are true.
 ### 0.1 Preserve the current evidence before refactoring
 
 - [x] VERIFIED — Tag `prototype-baseline-8d4e496` preserves the pre-refactor prototype at commit `8d4e496` for regression comparisons.
-- [ ] P0 — Record the exact Windows edition/build, CPU, GPU, RAM, display scaling, monitor layout, and refresh rate used for live measurements.
+- [x] VERIFIED — Record the Windows edition/build, CPU, GPU, RAM, display scaling, monitor layout, refresh rate, and provenance limits in `docs/experiment-environment.md`.
 - [ ] P0 — Record the exact Python version used by the successful current tests (`3.13.14` during this audit).
 - [ ] P0 — Record the Geometry Dash version from the in-game UI or store; the executable exposes no usable version metadata.
 - [ ] P0 — Record window mode, client resolution, VSync/FPS settings, level, character mode, and game speed.

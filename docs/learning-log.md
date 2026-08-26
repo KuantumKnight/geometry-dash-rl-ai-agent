@@ -572,3 +572,7 @@ The first pre-commit run fixed trailing whitespace in two pre-existing documenta
 ## 2026-08-26 — Preserved the pre-refactor prototype baseline
 
 Created the annotated tag `prototype-baseline-8d4e496` at commit `8d4e496` (`baseline: add non-learning policy comparison`). The tag is the fixed comparison point for packaging, quality-gate, and future environment-hardening changes; it contains no later refactor or CI files.
+
+## 2026-08-26 — Recorded the live experiment host fingerprint
+
+Added `docs/experiment-environment.md` with the observed Windows edition/build, CPU, GPUs and driver versions, installed RAM, active display, 150% scaling, 2560×1600/240 Hz display mode, and current 800×600 Geometry Dash client capture. The document explicitly distinguishes current-host evidence from historical-run equivalence and leaves unrecoverable in-game settings open rather than guessing.
