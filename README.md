@@ -136,6 +136,7 @@ The game executable, extracted game assets, checkpoints, raw recordings, and gen
 - [RL learning journey](docs/learning/README.md)
 - [Learning/engineering log](docs/learning-log.md)
 - [Environment API](docs/environment-api.md)
+- [Command surface](docs/command-surface.md)
 - [Screen-state map](docs/screen-state-map.md)
 - [Montage capture plan](docs/montage-plan.md)
 - [Media evidence log](docs/media-log.md)

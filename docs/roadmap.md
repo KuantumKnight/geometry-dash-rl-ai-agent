@@ -148,6 +148,8 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Configure the `src` layout so imports use `geometry_dash_env`, never `src.geometry_dash_env`.
 - [x] VERIFIED — Remove library imports from `tools`; move Windows control and screen detection under `src/geometry_dash_env`.
 - [ ] P0 — Add supported command-line entry points for capture, benchmark, baseline, train, evaluate, and record operations.
+
+> Evidence note (2026-08-26): `docs/command-surface.md` inventories the implemented capture, benchmark, baseline, and record commands. `train` and `evaluate` remain intentionally absent until the learning protocol exists.
 - [x] VERIFIED — Recreate `.venv` from the lock file with Python 3.13.14.
 - [x] VERIFIED — Verify dependency consistency with `uv pip check`.
 - [x] VERIFIED — Verify `uv run python -c "import geometry_dash_env"` works from the project environment.
