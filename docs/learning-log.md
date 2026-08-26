@@ -349,3 +349,25 @@ resets:            2
 ```
 
 This improved the live baseline from 127.00 ms / 7.87 decisions/sec to 86.87 ms / 11.51 decisions/sec. The environment is now close to the initial 12–15 decisions/sec target; reset and capture reliability remain unfinished Phase 1 work.
+
+## 2026-08-26 — Made reset state-aware and deterministic
+
+### Implementation
+
+Added coarse screen-state classification for results, level/transition screens, main menu, and unknown screens. `reset()` now refreshes focus, clicks retry only after a results screen is detected, tolerates the transition interval, requires consecutive level-like frames, and fails explicitly on the main menu or unknown screens. Key input restores focus only when Geometry Dash actually lost foreground focus.
+
+Added `tools/stress_reset.py` for unattended no-op episodes and reset-failure counting.
+
+### Stress test
+
+Command: `py -3.13 -u tools\\stress_reset.py --deaths 50`
+
+```text
+target deaths:     50
+deaths reached:    50
+reset attempts:    50
+reset failures:    0
+episode failures:  0
+```
+
+The reset path completed 50 consecutive deaths and retries without a failure. Accidental menu/unknown screens are now detected and reported instead of being silently accepted as valid gameplay.

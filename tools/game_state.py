@@ -120,3 +120,35 @@ def is_death_screen(image: Image.Image) -> bool:
         features["bottom_green_ratio"] > 0.04
         and features["center_dark_ratio"] > 0.50
     )
+
+
+def classify_screen(image: Image.Image) -> str:
+    """Classify the coarse screen state needed by the reset controller."""
+
+    if is_death_screen(image):
+        return "results"
+
+    sampled = image.convert("RGB").resize((160, 90), Image.Resampling.BILINEAR)
+    arr = np.asarray(sampled, dtype=np.uint16)
+    red = arr[..., 0]
+    green = arr[..., 1]
+    blue = arr[..., 2]
+
+    blue_level = (
+        (blue > 60)
+        & (blue * 100 > red * 125)
+        & (blue * 100 > green * 115)
+    )
+    if float(blue_level[:68].mean()) > 0.75:
+        return "gameplay_or_transition"
+
+    warm_menu = (
+        (red > 80)
+        & (green > 60)
+        & (red * 100 > blue * 160)
+        & (green * 100 > blue * 160)
+    )
+    if float(warm_menu.mean()) > 0.50:
+        return "main_menu"
+
+    return "unknown"

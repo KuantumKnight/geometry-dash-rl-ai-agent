@@ -66,6 +66,7 @@ USER32.ClientToScreen.restype = wintypes.BOOL
 USER32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
 USER32.SetForegroundWindow.argtypes = [wintypes.HWND]
 USER32.SetForegroundWindow.restype = wintypes.BOOL
+USER32.GetForegroundWindow.restype = wintypes.HWND
 USER32.SetCursorPos.argtypes = [ctypes.c_int, ctypes.c_int]
 USER32.SetCursorPos.restype = wintypes.BOOL
 USER32.mouse_event.argtypes = [
@@ -159,6 +160,13 @@ def focus_window(hwnd: wintypes.HWND) -> None:
     time.sleep(0.25)
 
 
+def focus_window_if_needed(hwnd: wintypes.HWND) -> None:
+    """Restore focus only when another window currently owns the foreground."""
+
+    if USER32.GetForegroundWindow() != hwnd:
+        focus_window(hwnd)
+
+
 def game_client_bbox(hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
     """Return the game client area in screen coordinates."""
 
@@ -177,8 +185,9 @@ def game_client_bbox(hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
 
 
 def send_key(hwnd: wintypes.HWND, virtual_key: int) -> None:
-    """Send one virtual-key press to the already-focused game window."""
+    """Send one key press, restoring focus only if it was lost."""
 
+    focus_window_if_needed(hwnd)
     USER32.keybd_event(virtual_key, 0, 0, 0)
     time.sleep(0.005)
     USER32.keybd_event(virtual_key, 0, KEYEVENTF_KEYUP, 0)

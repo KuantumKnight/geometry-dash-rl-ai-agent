@@ -17,7 +17,7 @@ from tools.capture_action import (
     game_client_bbox,
     send_jump,
 )
-from tools.game_state import is_death_screen, results_progress_ratio
+from tools.game_state import classify_screen, is_death_screen, results_progress_ratio
 
 
 class GeometryDashEnv:
@@ -39,14 +39,18 @@ class GeometryDashEnv:
         frame_skip: int = 4,
         max_steps: int = 900,
         reset_timeout: float = 3.0,
-        reset_settle: float = 0.5,
+        reset_settle: float = 1.0,
+        reset_stable_frames: int = 3,
     ) -> None:
         if observation_size[0] <= 0 or observation_size[1] <= 0:
             raise ValueError("observation_size dimensions must be positive")
         if fps <= 0 or frame_skip <= 0 or max_steps <= 0:
             raise ValueError("fps, frame_skip, and max_steps must be positive")
-        if reset_timeout <= 0 or reset_settle < 0:
-            raise ValueError("reset_timeout must be positive and reset_settle cannot be negative")
+        if reset_timeout <= 0 or reset_settle < 0 or reset_stable_frames <= 0:
+            raise ValueError(
+                "reset_timeout must be positive, reset_settle cannot be negative, "
+                "and reset_stable_frames must be positive"
+            )
         self.observation_size = observation_size
         self.fps = fps
         self.frame_interval = 1.0 / fps
@@ -54,6 +58,7 @@ class GeometryDashEnv:
         self.max_steps = max_steps
         self.reset_timeout = reset_timeout
         self.reset_settle = reset_settle
+        self.reset_stable_frames = reset_stable_frames
         self._screen = MSS()
         self._hwnd = None
         self._bbox: tuple[int, int, int, int] | None = None
@@ -85,6 +90,33 @@ class GeometryDashEnv:
         resized = image.resize(self.observation_size, Image.Resampling.BILINEAR)
         return np.asarray(resized, dtype=np.uint8).copy()
 
+    def _wait_for_ready_gameplay(self) -> Image.Image:
+        """Wait for consecutive level-like frames after retry or transition."""
+
+        deadline = time.monotonic() + self.reset_timeout
+        stable_frames = 0
+        last_state = "unknown"
+        image: Image.Image | None = None
+        while time.monotonic() < deadline:
+            image = self._capture()
+            last_state = classify_screen(image)
+            if last_state == "main_menu":
+                raise RuntimeError(
+                    "Reset encountered the main menu; enter the target level before retrying."
+                )
+            if last_state == "gameplay_or_transition":
+                stable_frames += 1
+                if stable_frames >= self.reset_stable_frames:
+                    return image
+            else:
+                stable_frames = 0
+            time.sleep(self.frame_interval)
+
+        raise TimeoutError(
+            "Level did not reach stable gameplay during reset "
+            f"(last_state={last_state})"
+        )
+
     def _wait_for_frame_deadline(self, deadline: float) -> None:
         """Wait only until the next frame deadline, if computation is ahead."""
 
@@ -97,18 +129,18 @@ class GeometryDashEnv:
 
         self._ensure_window()
         image = self._capture()
-        if is_death_screen(image):
+        screen_state = classify_screen(image)
+        if screen_state == "results":
             click_client(self._hwnd)
-            deadline = time.monotonic() + self.reset_timeout
-            while time.monotonic() < deadline:
-                time.sleep(0.05)
-                image = self._capture()
-                if not is_death_screen(image):
-                    break
-            else:
-                raise TimeoutError("Results screen did not clear during reset")
             time.sleep(self.reset_settle)
-            image = self._capture()
+            image = self._wait_for_ready_gameplay()
+        elif screen_state == "gameplay_or_transition":
+            image = self._wait_for_ready_gameplay()
+        else:
+            raise RuntimeError(
+                "Reset requires a results screen or active level; "
+                f"detected screen_state={screen_state}"
+            )
 
         self._episode_active = True
         self._step_count = 0
