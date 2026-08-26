@@ -22,3 +22,6 @@ wandb/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local game installation (do not commit proprietary game files)
+/Geometry Dash/
