@@ -405,3 +405,18 @@ Added `gymnasium.Env` inheritance, `Discrete(2)` for no-op/jump actions, and a `
 ### Scope
 
 This commit only cleans up the environment API. It does not introduce an agent, training loop, or reward changes.
+
+## 2026-08-26 — Added environment contract tests
+
+### Coverage
+
+Added a standard-library `unittest` suite covering reset smoke behavior, main-menu rejection, jump dispatch, results-screen detection, terminal progress reward, deadline pacing, action/observation spaces, and bbox refresh after a simulated window move.
+
+### Result
+
+```text
+Ran 9 tests in 0.020s
+OK
+```
+
+The unit tests run without Geometry Dash; the 50-death reset stress test and 100-capture stability check remain the live integration checks.
