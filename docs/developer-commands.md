@@ -45,3 +45,7 @@ Use the actual operation flags only after reading each tool's help. Live command
 ## Future commands
 
 `train` and `evaluate` are deliberately not listed as runnable commands yet. They become part of this surface only after the reward, algorithm, checkpoint, and held-out evaluation decisions are implemented and documented.
+
+## Shell completion decision
+
+Shell completion is intentionally deferred until the command names and flags stabilize. The current `scripts/dev.ps1` `ValidateSet` is the single source for task names; generating completion now would encode provisional `train`/`evaluate` behavior and create another surface to keep synchronized.

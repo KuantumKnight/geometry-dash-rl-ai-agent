@@ -165,6 +165,8 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Add `--help` examples and test help/invalid-option exit codes for all ten public tools in `tests/test_cli_help.py`.
 - [ ] P1 — Add shell completion only after CLI names and flags stabilize.
 
+> Decision (2026-08-26): shell completion remains deferred; `scripts/dev.ps1` `ValidateSet` is authoritative while train/evaluate and their flags are provisional.
+
 ### 0.4 Add code-quality gates
 
 - [x] VERIFIED — Select Ruff, Pyright, and Coverage.py; scope is `src/`, `tests/`, and `tools/`, with Win32-only input excluded from the coverage floor.
