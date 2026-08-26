@@ -144,6 +144,7 @@ The game executable, extracted game assets, checkpoints, raw recordings, and gen
 - [Code-quality review](docs/quality-review.md)
 - [Dependency security audit](docs/security-audit.md)
 - [Emergency stop](docs/emergency-stop.md)
+- [Phase 1 status and live handoff](docs/phase1-status.md)
 - [Screen-state map](docs/screen-state-map.md)
 - [Montage capture plan](docs/montage-plan.md)
 - [Media evidence log](docs/media-log.md)

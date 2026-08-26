@@ -733,6 +733,10 @@ Reset and step info now carry stable observation (`observation-v1`), action (`ac
 
 The observation contract explicitly declares RGB `HWC`; stacked observations remain `(stack, H, W, C)`. Channel-first training libraries must use a visible transpose wrapper, preserving a single source of truth for capture and tests.
 
+## 2026-08-26 — Recorded the Phase 1 live-evidence boundary
+
+Added `docs/phase1-status.md` to distinguish deterministic offline contract work from claims that require a running reference game. The remaining live gates are named explicitly so future qualification artifacts can be linked to a Git SHA, configuration, redacted system fingerprint, report, and checksums.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
