@@ -40,6 +40,15 @@ The jump action has been manually validated; the checklist remains open until it
 
 The final environment passed 9 unit tests, completed a 100-step benchmark at 83.42 ms mean step time / 11.99 decisions per second, and completed a 50-death stress run with zero reset failures. PPO/DQN and the non-learning baseline remain intentionally deferred to the next phase.
 
+## Phase 2 — Define the RL problem properly
+
+- [x] Establish observation v1 as a 160×90 RGB frame
+- [ ] Add configurable temporal frame stacking
+- [ ] Compare RGB, grayscale, and cropped gameplay observations
+- [ ] Choose a training representation based on speed and task performance
+- [x] Defer object detection until a simple pixel baseline is evaluated
+- [ ] Preserve montage-worthy videos and key frames for each meaningful experiment
+
 ## Stage 3 — Baseline agent
 
 - [ ] Establish a simple non-learning baseline

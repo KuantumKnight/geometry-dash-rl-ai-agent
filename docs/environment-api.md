@@ -13,11 +13,17 @@ env.close()
 
 `GeometryDashEnv` inherits from `gymnasium.Env`, exposes `action_space` as
 `gymnasium.spaces.Discrete(2)`, and exposes `observation_space` as a
-`gymnasium.spaces.Box` with shape `(90, 160, 3)` and dtype `uint8`.
+`gymnasium.spaces.Box` matching the configured observation shape and dtype
+`uint8`.
 
 ## Observation
 
 The environment captures the game client as RGB pixels and resizes each frame to `160×90`. The returned NumPy array has shape `(90, 160, 3)` and dtype `uint8`.
+
+This is observation v1. The environment can optionally stack the most recent
+frames with `frame_stack=4`, returning shape `(4, 90, 160, 3)` in
+oldest-to-newest order. The default remains `frame_stack=1` so the single-frame
+baseline stays reproducible while representations are compared.
 
 ## Actions
 

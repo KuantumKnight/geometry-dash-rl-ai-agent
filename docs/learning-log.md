@@ -442,3 +442,15 @@ Phase 1 is complete. The next phase can establish a non-learning baseline, but P
 ## 2026-08-26 — Started the media archive
 
 The 20-second 60 FPS episode recording at `artifacts/episodes/20260826T113120Z/episode.mp4` is worth preserving as a technical montage candidate. It shows the complete screen-state flow and reset story used to build Phase 1. Media selection and intended presentation use are now tracked in [`docs/media-log.md`](media-log.md); routine generated artifacts remain local and gitignored.
+
+## 2026-08-26 — Started Phase 2 observation definition
+
+### Baseline
+
+Observation v1 remains a single `160×90` RGB frame. This gives us a simple, reproducible baseline before changing color representation or cropping the gameplay region.
+
+### Next representation
+
+The next implementation adds configurable frame stacking so a policy can observe recent motion rather than one isolated screenshot. The initial comparison will keep RGB and use four frames in oldest-to-newest order; grayscale and cropped-region variants come later. Object detection is intentionally deferred.
+
+The media archive rule continues through Phase 2: preserve any episode that demonstrates a meaningful observation breakthrough, failure mode, or presentation-worthy result.
