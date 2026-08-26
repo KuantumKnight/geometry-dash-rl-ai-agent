@@ -649,6 +649,10 @@ Updated `.github/workflows/quality.yml` to save verbose unittest output, `covera
 
 Pinned `pip-audit` in the dev dependency group and added a weekly/manual Windows workflow that installs from `uv.lock` before running `uv run pip-audit --strict`. The command and its failure semantics are documented in `docs/security-audit.md`.
 
+## 2026-08-26 — Made Win32 platform control lazy
+
+Moved `user32` and `kernel32` loading behind a live-operation guard. Offline imports now remain inert, and a regression test protects this boundary so Linux-based tooling can import the package without attempting Win32 calls.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

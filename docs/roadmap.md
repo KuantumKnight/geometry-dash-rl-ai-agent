@@ -260,7 +260,7 @@ Version 1 is complete only when all statements below are true.
 ### 1.1 Isolate and configure platform control
 
 - [ ] P0 — Move game discovery, Win32 window control, input dispatch, and screen capture behind explicit interfaces.
-- [ ] P0 — Prevent `ctypes.WinDLL` calls at import time on non-Windows platforms.
+- [x] VERIFIED — Prevent `ctypes.WinDLL` calls at import time on non-Windows platforms; Win32 libraries are lazy-loaded only for live operations and protected by an offline import test.
 - [ ] P0 — Replace the hard-coded `Geometry Dash/GeometryDash.exe` assumption with config/CLI discovery while retaining a safe default.
 - [ ] P0 — Normalize and validate the configured executable path without logging sensitive parent paths unnecessarily.
 - [ ] P0 — Identify the game process/window by more than one robust signal; handle multiple matching windows explicitly.
