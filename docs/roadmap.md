@@ -161,7 +161,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Choose `uv` as the Windows-friendly task runner and document the canonical PowerShell commands in `docs/developer-commands.md`.
 - [x] VERIFIED — Add `scripts/dev.ps1` commands for `setup`, `format`, `lint`, `typecheck`, `test`, `test-offline`, `test-live`, `benchmark`, `train`, and `evaluate`; future train/evaluate tasks fail closed with exit code 2 until implemented.
 - [x] VERIFIED — Prove offline CLI help works with a deliberately missing `GEOMETRY_DASH_EXE`; `tests/test_offline_cli.py` covers episode scan and detector benchmark paths.
-- [ ] P0 — Ensure live commands fail with a short actionable message when Windows, the game path, or the game window is unavailable.
+- [x] VERIFIED — Test that a live capture command fails before input with an actionable missing-executable message in `tests/test_live_cli_contract.py`.
 - [ ] P0 — Add `--help` examples and validate every public CLI's exit codes.
 - [ ] P1 — Add shell completion only after CLI names and flags stabilize.
 

@@ -617,6 +617,10 @@ Added `scripts/dev.ps1` with named tasks for setup, format, lint, typecheck, tes
 
 Added `tests/test_offline_cli.py`. It runs the episode scanner and offline detector benchmark help paths with `GEOMETRY_DASH_EXE` set to a deliberately missing executable and verifies both exit successfully without touching the live environment.
 
+## 2026-08-26 — Locked fail-fast behavior for live commands
+
+Added `tests/test_live_cli_contract.py`. A jump capture invoked with a deliberately missing `GEOMETRY_DASH_EXE` exits nonzero before waiting for a window or sending input, and includes the exact missing path in its actionable error message.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
