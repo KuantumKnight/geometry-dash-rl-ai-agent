@@ -319,7 +319,7 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Define and test `terminated` for death and completion.
 - [ ] P0 — Define and test `truncated` for time limit, focus loss, invalid state, and operator stop.
 - [ ] P0 — Use structured termination/truncation reasons in `info`.
-- [ ] P0 — Correct the documented duration of `max_steps=900`; measured 11.99 decisions/sec implies about 75 seconds, not 60.
+- [x] VERIFIED — Correct the documented duration of `max_steps=900`; the historical 11.99 decisions/sec measurement implies about 75 seconds, with scheduling variance explicitly noted.
 - [ ] P0 — Decide how `reset(seed=...)` is described because it cannot seed Geometry Dash itself.
 - [ ] P0 — Either implement supported `reset(options=...)` behavior or document/reject unused options.
 - [ ] P0 — Make `close()` safe to call multiple times.
