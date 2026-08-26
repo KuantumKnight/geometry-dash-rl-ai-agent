@@ -172,3 +172,13 @@ Added configurable `frame_skip` and `max_steps`. The default environment capture
 ### Reasoning
 
 This separates visual capture rate from policy decision rate. The agent can later make decisions at roughly 15 Hz while preserving the game’s 60 FPS timing for action effects and video evidence.
+
+## 2026-08-26 — Terminal progress reward
+
+### Implementation
+
+Added a results-screen progress-bar estimator. A terminated episode now receives `-1 + progress_ratio`, where `progress_ratio` is the detected normal-mode bar fill from `0.0` to `1.0`.
+
+### Reasoning
+
+This gives the agent a meaningful distinction between dying at 1% and dying at 50% without pretending that raw screen motion is progress. The next improvement is to validate this estimator across more levels and add continuous progress tracking if the game exposes a reliable signal during gameplay.

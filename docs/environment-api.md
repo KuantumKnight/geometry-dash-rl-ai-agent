@@ -23,8 +23,10 @@ The environment captures the game client as RGB pixels and resizes each frame to
 ## Current reward and termination
 
 - Alive/transition frame: reward `0.0`, `terminated=False`
-- Results screen detected: reward `-1.0`, `terminated=True`
-- `truncated` is always `False` in this smoke-test wrapper
+- Results screen detected: reward `-1.0 + progress_ratio`, `terminated=True`
+- Time limit reached: `truncated=True`, `terminated=False`
+
+The `progress_ratio` is estimated from the normal-mode green progress bar on the results screen and is included in `info`. For example, an attempt ending at 50% receives approximately `-0.5`. This is a terminal progress signal, not yet a continuous reward.
 
 ## Timing
 

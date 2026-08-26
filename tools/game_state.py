@@ -48,6 +48,33 @@ def death_screen_features(image: Image.Image) -> dict[str, float]:
     }
 
 
+def results_progress_ratio(image: Image.Image) -> float:
+    """Estimate the normal-mode progress bar fill from a results screen."""
+
+    sampled = image.convert("RGB").resize((320, 180), Image.Resampling.BILINEAR)
+    width, height = sampled.size
+    left = int(0.08 * width)
+    right = int(0.92 * width)
+    # The results panel shifts vertically between window layouts. Exclude the
+    # decorative top beam and bottom controls, then search the central band.
+    top = int(0.18 * height)
+    bottom = int(0.65 * height)
+    pixels = sampled.load()
+    best_fill = 0
+
+    for y in range(top, bottom):
+        run = 0
+        for x in range(left, right):
+            if _is_bright_green(pixels[x, y]):
+                run += 1
+            else:
+                best_fill = max(best_fill, run)
+                run = 0
+        best_fill = max(best_fill, run)
+
+    return best_fill / max(1, right - left)
+
+
 def is_death_screen(image: Image.Image) -> bool:
     """Detect the static Geometry Dash death/results overlay.
 

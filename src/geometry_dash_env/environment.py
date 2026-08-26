@@ -17,7 +17,7 @@ from tools.capture_action import (
     game_client_bbox,
     send_jump,
 )
-from tools.game_state import is_death_screen
+from tools.game_state import is_death_screen, results_progress_ratio
 
 
 class GeometryDashEnv:
@@ -137,10 +137,12 @@ class GeometryDashEnv:
         truncated = not terminated and self._step_count >= self.max_steps
         if terminated or truncated:
             self._episode_active = False
-        reward = -1.0 if terminated else 0.0
+        progress_ratio = results_progress_ratio(image) if terminated else None
+        reward = (-1.0 + progress_ratio) if terminated and progress_ratio is not None else 0.0
         return self._observation(image), reward, terminated, truncated, {
             "screen_state": "results" if terminated else "gameplay_or_transition",
             "frames_elapsed": frames_elapsed,
             "decision_step": self._step_count,
             "truncated": truncated,
+            "progress_ratio": progress_ratio,
         }
