@@ -134,7 +134,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Record `ffmpeg 8.1.1-full_build-www.gyan.dev` and video-encoding provenance in `docs/experiment-environment.md`; the episode recorder encoded H.264 while benchmarks do not encode video.
 - [x] VERIFIED — Export `docs/dependency-snapshot-20260826.txt` as historical evidence; `uv.lock` remains the dependency source of truth.
 - [x] VERIFIED — Back up the selected state-flow video to ignored `media-backups/20260826T113120Z/` outside `artifacts/` before cleanup.
-- [ ] P0 — Add checksums for milestone videos and metadata so archived evidence can be verified later.
+- [x] VERIFIED — Add `docs/media-checksums.sha256` for the milestone video, sidecar metadata, and identical local backup.
 
 ### 0.2 Rebuild Python project metadata
 

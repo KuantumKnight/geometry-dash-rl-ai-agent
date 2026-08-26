@@ -29,6 +29,7 @@ Raw frames and videos remain under the gitignored `artifacts/` directory. A clip
 | Related learning | Environment/episode semantics in `learning-log.md` |
 | Git commit | Not yet recorded in sidecar metadata |
 | SHA-256 | `DDF0BFFA5B924B75238D9FDA7373BCC874E3133D5FC7BCD8C0FC294664EF48E9` |
+| Checksum manifest | [`media-checksums.sha256`](media-checksums.sha256) records source video, sidecar metadata, and backup |
 | Second backup | `media-backups/20260826T113120Z/episode.mp4` (local ignored backup; hash matches source) |
 | Privacy review | Pending |
 | Rights review | Pending |
@@ -36,6 +37,7 @@ Raw frames and videos remain under the gitignored `artifacts/` directory. A clip
 #### Required preservation work
 
 - [x] Compute and record the source-video SHA-256.
+- [x] Record source video, metadata, and backup hashes in [`media-checksums.sha256`](media-checksums.sha256).
 - [ ] Record the exact related commit or nearest historical commit.
 - [x] Copy the source video to `media-backups/20260826T113120Z/` outside `artifacts/`; metadata and selected PNG evidence remain pending.
 - [ ] Restore/open the backup copy once.

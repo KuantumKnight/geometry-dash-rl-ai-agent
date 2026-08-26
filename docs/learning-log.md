@@ -597,6 +597,10 @@ Recorded `ffmpeg 8.1.1-full_build-www.gyan.dev` and verified the candidate episo
 
 Copied `artifacts/episodes/20260826T113120Z/episode.mp4` to the ignored local path `media-backups/20260826T113120Z/episode.mp4` before cleanup. The source and backup are both 1,082,879 bytes and have matching SHA-256 hashes; metadata and selected PNG evidence still need separate preservation work.
 
+## 2026-08-26 — Added a machine-readable media checksum manifest
+
+Added `docs/media-checksums.sha256` with hashes for the source MP4, its `metadata.json` sidecar, and the ignored backup copy. The source and backup hashes match exactly; the metadata hash is recorded separately so later edits are detectable.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
