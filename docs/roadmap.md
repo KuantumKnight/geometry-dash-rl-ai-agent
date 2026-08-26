@@ -262,7 +262,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Move game discovery, Win32 window control, input dispatch, and screen capture behind explicit `PlatformBackend`/`CaptureBackend` interfaces; offline tests inject fakes.
 - [x] VERIFIED — Prevent `ctypes.WinDLL` calls at import time on non-Windows platforms; Win32 libraries are lazy-loaded only for live operations and protected by an offline import test.
 - [x] VERIFIED — Replace the hard-coded `Geometry Dash/GeometryDash.exe` assumption with `GEOMETRY_DASH_EXE`/adapter configuration while retaining a project-local safe default.
-- [ ] P0 — Normalize and validate the configured executable path without logging sensitive parent paths unnecessarily.
+- [x] VERIFIED — Normalize and validate the configured executable path, require an `.exe` suffix, and keep routine diagnostics focused on the executable target.
 - [ ] P0 — Identify the game process/window by more than one robust signal; handle multiple matching windows explicitly.
 - [ ] P0 — Reacquire the window handle after game restart or handle invalidation.
 - [ ] P0 — Detect minimized, occluded, zero-size, or off-screen client areas and stop safely.

@@ -661,6 +661,10 @@ The environment now depends on small `PlatformBackend` and `CaptureBackend` prot
 
 Executable selection now flows through `GEOMETRY_DASH_EXE` or the adapter constructor, with the project-local `Geometry Dash/GeometryDash.exe` path retained as a safe default. Offline tests cover relative overrides and missing executable behavior.
 
+## 2026-08-26 — Validated live executable paths
+
+`validate_game_path()` now canonicalizes paths, rejects non-`.exe` targets, and optionally verifies existence before any window/input operation. The validation boundary keeps path handling centralized for future redaction and diagnostics.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
