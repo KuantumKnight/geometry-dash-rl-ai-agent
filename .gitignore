@@ -25,3 +25,6 @@ Thumbs.db
 
 # Local game installation (do not commit proprietary game files)
 /Geometry Dash/
+
+# Local capture outputs
+/artifacts/

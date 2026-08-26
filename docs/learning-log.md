@@ -21,3 +21,20 @@ The first technical risk is not the choice of algorithm. It is whether the agent
 ### Next experiment
 
 Build the smallest possible interaction prototype: capture one frame, send one jump or no-op action, and verify a reliable termination signal.
+
+## 2026-08-26 — Capture/action prototype scaffold
+
+### What changed
+
+- Added `tools/capture_action.py`.
+- Added Pillow as the first dependency for screen capture.
+- Added an explicit `--action jump` flag; the default is a no-op.
+- Kept game launching manual so the prototype cannot unexpectedly start the game.
+
+### Current limitation
+
+The prototype captures the primary display rather than locating and cropping the game window. This is intentionally a baseline; window detection and game-state detection come after confirming that frames and input are delivered.
+
+### Next test
+
+Start Geometry Dash manually, focus its window, run the prototype with `--action noop`, and inspect the two saved frames. Only then test `--action jump`.
