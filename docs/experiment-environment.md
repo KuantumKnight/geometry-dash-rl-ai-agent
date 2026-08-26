@@ -26,3 +26,9 @@ Captured on 2026-08-26 from the Windows host running the local Geometry Dash pro
 The historical logs identify the same project and date but do not embed a machine fingerprint. This snapshot is therefore the best available record and should be treated as “current host, historical equivalence not independently proven” until the original run is confirmed by the author.
 
 Game version, window mode, VSync/FPS setting, level speed, and other in-game settings remain open roadmap checks because they cannot be recovered exactly from the executable metadata or the current capture alone.
+
+## Geometry Dash version evidence gap
+
+The local executable has empty `ProductVersion`, `FileVersion`, `ProductName`, and `CompanyName` version-resource fields. No Steam app manifest was present in the checked standard Steam locations. The current process is confirmed as `Geometry Dash.exe`, but these facts do not identify its game release.
+
+The exact version must be recorded from the in-game UI or the store page in a future evidence capture. This roadmap check intentionally remains open.

@@ -580,3 +580,7 @@ Added `docs/experiment-environment.md` with the observed Windows edition/build, 
 ## 2026-08-26 — Recorded the locked test interpreter
 
 Added CPython `3.13.14` to the experiment fingerprint. This is the interpreter used by `uv run` for the successful 10-test run and package checks; the supported project range remains `>=3.12,<3.14`.
+
+## 2026-08-26 — Documented the unrecoverable Geometry Dash version
+
+The local `GeometryDash.exe` has no usable Windows version-resource fields, and no standard Steam app manifest was present. The running process and executable path are confirmed, but an exact game release cannot be inferred responsibly. The roadmap item remains open until an in-game UI or store-version capture is recorded.
