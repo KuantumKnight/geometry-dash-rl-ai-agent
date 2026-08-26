@@ -697,6 +697,10 @@ The normalized retry click now snapshots the cursor position and restores it eve
 
 Live hosts can inject a thread-safe `EmergencyStop` latch and bind `Ctrl+Shift+F12` to its `request()` method. The environment checks the latch before action dispatch and on every frame boundary, halting without sending additional input.
 
+## 2026-08-26 — Defined canonical screen states
+
+Added `ScreenState` and `StateMachine` with the ten roadmap states, immutable transition records, confidence/reason validation, and a bounded history for diagnostics. Offline tests reject illegal jumps such as `DISCONNECTED -> GAMEPLAY`.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
