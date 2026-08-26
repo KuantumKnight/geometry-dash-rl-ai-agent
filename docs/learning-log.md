@@ -33,8 +33,8 @@ Build the smallest possible interaction prototype: capture one frame, send one j
 
 ### Current limitation
 
-The prototype captures the primary display rather than locating and cropping the game window. This is intentionally a baseline; window detection and game-state detection come after confirming that frames and input are delivered.
+The first draft captured the primary display, which was too broad for an RL observation. The prototype now locates the visible window owned by `GeometryDash.exe`, focuses it, and captures only its client area. Game-state detection is still not implemented.
 
 ### Next test
 
-Start Geometry Dash manually, focus its window, run the prototype with `--action noop`, and inspect the two saved frames. Only then test `--action jump`.
+Start Geometry Dash manually, run the prototype with `--action noop`, and inspect the two game-window frames. Only then test `--action jump`.

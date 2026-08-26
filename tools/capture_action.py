@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from ctypes import wintypes
 
 from PIL import ImageGrab
 
@@ -21,21 +23,144 @@ GAME_PATH = PROJECT_ROOT / "Geometry Dash" / "GeometryDash.exe"
 DEFAULT_OUTPUT = PROJECT_ROOT / "artifacts" / "frames"
 VK_SPACE = 0x20
 KEYEVENTF_KEYUP = 0x0002
+PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+SW_RESTORE = 9
 
 
-def send_jump() -> None:
-    """Send a short space-bar press to the focused window on Windows."""
+class RECT(ctypes.Structure):
+    _fields_ = [
+        ("left", wintypes.LONG),
+        ("top", wintypes.LONG),
+        ("right", wintypes.LONG),
+        ("bottom", wintypes.LONG),
+    ]
 
-    user32 = ctypes.windll.user32
-    user32.keybd_event(VK_SPACE, 0, 0, 0)
+
+class POINT(ctypes.Structure):
+    _fields_ = [("x", wintypes.LONG), ("y", wintypes.LONG)]
+
+
+USER32 = ctypes.WinDLL("user32", use_last_error=True)
+KERNEL32 = ctypes.WinDLL("kernel32", use_last_error=True)
+ENUM_WINDOWS_PROC = ctypes.WINFUNCTYPE(
+    wintypes.BOOL, wintypes.HWND, wintypes.LPARAM
+)
+
+USER32.EnumWindows.argtypes = [ENUM_WINDOWS_PROC, wintypes.LPARAM]
+USER32.EnumWindows.restype = wintypes.BOOL
+USER32.IsWindowVisible.argtypes = [wintypes.HWND]
+USER32.IsWindowVisible.restype = wintypes.BOOL
+USER32.IsIconic.argtypes = [wintypes.HWND]
+USER32.IsIconic.restype = wintypes.BOOL
+USER32.GetWindowThreadProcessId.argtypes = [
+    wintypes.HWND,
+    ctypes.POINTER(wintypes.DWORD),
+]
+USER32.GetWindowThreadProcessId.restype = wintypes.DWORD
+USER32.GetClientRect.argtypes = [wintypes.HWND, ctypes.POINTER(RECT)]
+USER32.GetClientRect.restype = wintypes.BOOL
+USER32.ClientToScreen.argtypes = [wintypes.HWND, ctypes.POINTER(POINT)]
+USER32.ClientToScreen.restype = wintypes.BOOL
+USER32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+USER32.SetForegroundWindow.argtypes = [wintypes.HWND]
+USER32.SetForegroundWindow.restype = wintypes.BOOL
+
+KERNEL32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+KERNEL32.OpenProcess.restype = wintypes.HANDLE
+KERNEL32.QueryFullProcessImageNameW.argtypes = [
+    wintypes.HANDLE,
+    wintypes.DWORD,
+    wintypes.LPWSTR,
+    ctypes.POINTER(wintypes.DWORD),
+]
+KERNEL32.QueryFullProcessImageNameW.restype = wintypes.BOOL
+KERNEL32.CloseHandle.argtypes = [wintypes.HANDLE]
+KERNEL32.CloseHandle.restype = wintypes.BOOL
+
+
+def normalized_path(path: Path) -> str:
+    return os.path.normcase(str(path.resolve(strict=False)))
+
+
+def window_process_path(hwnd: wintypes.HWND) -> Path | None:
+    process_id = wintypes.DWORD()
+    USER32.GetWindowThreadProcessId(hwnd, ctypes.byref(process_id))
+    process_handle = KERNEL32.OpenProcess(
+        PROCESS_QUERY_LIMITED_INFORMATION, False, process_id.value
+    )
+    if not process_handle:
+        return None
+
+    try:
+        buffer_size = wintypes.DWORD(32768)
+        buffer = ctypes.create_unicode_buffer(buffer_size.value)
+        if not KERNEL32.QueryFullProcessImageNameW(
+            process_handle, 0, buffer, ctypes.byref(buffer_size)
+        ):
+            return None
+        return Path(buffer.value)
+    finally:
+        KERNEL32.CloseHandle(process_handle)
+
+
+def find_game_window() -> wintypes.HWND | None:
+    """Find a visible top-level window owned by the local game executable."""
+
+    target_path = normalized_path(GAME_PATH)
+    matching_window: list[wintypes.HWND] = []
+
+    @ENUM_WINDOWS_PROC
+    def visit_window(hwnd: wintypes.HWND, _lparam: wintypes.LPARAM) -> bool:
+        if USER32.IsWindowVisible(hwnd) and not USER32.IsIconic(hwnd):
+            process_path = window_process_path(hwnd)
+            if process_path and normalized_path(process_path) == target_path:
+                matching_window.append(hwnd)
+                return False
+        return True
+
+    USER32.EnumWindows(visit_window, 0)
+    return matching_window[0] if matching_window else None
+
+
+def focus_window(hwnd: wintypes.HWND) -> None:
+    """Restore and focus the game window before capture or input."""
+
+    if USER32.IsIconic(hwnd):
+        USER32.ShowWindow(hwnd, SW_RESTORE)
+    USER32.SetForegroundWindow(hwnd)
+    time.sleep(0.25)
+
+
+def game_client_bbox(hwnd: wintypes.HWND) -> tuple[int, int, int, int]:
+    """Return the game client area in screen coordinates."""
+
+    client_rect = RECT()
+    origin = POINT()
+    if not USER32.GetClientRect(hwnd, ctypes.byref(client_rect)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    if not USER32.ClientToScreen(hwnd, ctypes.byref(origin)):
+        raise ctypes.WinError(ctypes.get_last_error())
+
+    width = client_rect.right - client_rect.left
+    height = client_rect.bottom - client_rect.top
+    if width <= 0 or height <= 0:
+        raise RuntimeError("Geometry Dash window has no visible client area")
+    return (origin.x, origin.y, origin.x + width, origin.y + height)
+
+
+def send_jump(hwnd: wintypes.HWND) -> None:
+    """Focus the game and send a short space-bar press."""
+
+    focus_window(hwnd)
+    USER32.keybd_event(VK_SPACE, 0, 0, 0)
     time.sleep(0.05)
-    user32.keybd_event(VK_SPACE, 0, KEYEVENTF_KEYUP, 0)
+    USER32.keybd_event(VK_SPACE, 0, KEYEVENTF_KEYUP, 0)
 
 
-def capture_frame(path: Path) -> tuple[int, int]:
-    """Capture the primary display and return its dimensions."""
+def capture_frame(path: Path, hwnd: wintypes.HWND) -> tuple[int, int]:
+    """Capture only the focused game's client area."""
 
-    image = ImageGrab.grab()
+    image = ImageGrab.grab(bbox=game_client_bbox(hwnd))
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
     return image.size
@@ -65,21 +190,29 @@ def main() -> None:
         raise FileNotFoundError(f"Geometry Dash executable not found: {GAME_PATH}")
 
     print(f"Game executable found: {GAME_PATH}")
-    print("Focus the Geometry Dash window. Capturing in 3 seconds...")
+    print("Start Geometry Dash manually. Searching for its window in 3 seconds...")
     time.sleep(3)
+
+    hwnd = find_game_window()
+    if hwnd is None:
+        raise RuntimeError(
+            "No visible Geometry Dash window found. Start the game and try again."
+        )
+    focus_window(hwnd)
+    print("Geometry Dash window found and focused.")
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     before_path = args.output_dir / f"{timestamp}_before.png"
     after_path = args.output_dir / f"{timestamp}_after.png"
 
-    before_size = capture_frame(before_path)
+    before_size = capture_frame(before_path, hwnd)
     if args.action == "jump":
         print("Sending jump action: space bar")
-        send_jump()
+        send_jump(hwnd)
     else:
         print("Sending no-op action")
     time.sleep(0.25)
-    after_size = capture_frame(after_path)
+    after_size = capture_frame(after_path, hwnd)
 
     print(f"Before frame: {before_path} ({before_size[0]}x{before_size[1]})")
     print(f"After frame:  {after_path} ({after_size[0]}x{after_size[1]})")
