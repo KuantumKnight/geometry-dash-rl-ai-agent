@@ -7,8 +7,10 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import Any, cast
+from unittest.mock import MagicMock, call, patch
 
 from geometry_dash_env.platform_control import (
+    click_client,
     resolve_game_path,
     select_game_window,
     validate_client_bbox,
@@ -76,6 +78,36 @@ class PlatformConfigTests(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "occluded"):
             validate_client_bbox((0, 0, 800, 600), foreground=False)
+
+    def test_reset_click_restores_cursor_position(self) -> None:
+        """Normalized reset clicks do not leave the user's cursor displaced."""
+
+        user32 = MagicMock()
+
+        def get_cursor(pointer: Any) -> bool:
+            pointer._obj.x = 11
+            pointer._obj.y = 22
+            return True
+
+        user32.GetCursorPos.side_effect = get_cursor
+        with (
+            patch(
+                "geometry_dash_env.platform_control._load_win32",
+                return_value=(user32, MagicMock()),
+            ),
+            patch(
+                "geometry_dash_env.platform_control.game_client_bbox",
+                return_value=(0, 0, 100, 100),
+            ),
+            patch("geometry_dash_env.platform_control.focus_window"),
+            patch("geometry_dash_env.platform_control.time.sleep"),
+        ):
+            click_client(cast(Any, 123))
+
+        self.assertEqual(
+            user32.SetCursorPos.call_args_list,
+            [call(29, 82), call(11, 22)],
+        )
 
 
 if __name__ == "__main__":

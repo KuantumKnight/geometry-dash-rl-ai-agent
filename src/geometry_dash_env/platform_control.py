@@ -110,6 +110,8 @@ def _load_win32() -> tuple[Any, Any]:
         USER32.SetForegroundWindow.argtypes = [wintypes.HWND]
         USER32.SetForegroundWindow.restype = wintypes.BOOL
         USER32.GetForegroundWindow.restype = wintypes.HWND
+        USER32.GetCursorPos.argtypes = [ctypes.POINTER(POINT)]
+        USER32.GetCursorPos.restype = wintypes.BOOL
         USER32.SetCursorPos.argtypes = [ctypes.c_int, ctypes.c_int]
         USER32.SetCursorPos.restype = wintypes.BOOL
         USER32.mouse_event.argtypes = [
@@ -343,10 +345,16 @@ def click_client(
     x = left + round((right - left) * relative_x)
     y = top + round((bottom - top) * relative_y)
     focus_window(hwnd)
-    user32.SetCursorPos(x, y)
-    time.sleep(0.05)
-    user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
-    user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+    original_position = POINT()
+    restore_cursor = bool(user32.GetCursorPos(ctypes.byref(original_position)))
+    try:
+        user32.SetCursorPos(x, y)
+        time.sleep(0.05)
+        user32.mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+        user32.mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
+    finally:
+        if restore_cursor:
+            user32.SetCursorPos(original_position.x, original_position.y)
 
 
 class PlatformBackend(Protocol):

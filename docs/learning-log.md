@@ -689,6 +689,10 @@ The environment no longer silently mixes observations after a window move or res
 
 Each environment step now passes through an optional `max_action_rate` limiter (30 decisions/sec by default). The limiter resets with each episode and is covered by a deterministic timing test.
 
+## 2026-08-26 — Restored cursor after reset clicks
+
+The normalized retry click now snapshots the cursor position and restores it even if mouse dispatch raises. A mocked Win32 test verifies both the click and restoration coordinates.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
