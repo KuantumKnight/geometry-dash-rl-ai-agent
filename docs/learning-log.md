@@ -613,6 +613,10 @@ Added `docs/developer-commands.md` with canonical PowerShell commands for setup,
 
 Added `scripts/dev.ps1` with named tasks for setup, format, lint, typecheck, test, test-offline, test-live, benchmark, train, and evaluate. Live tasks require an explicit `-ConfirmLive`; train/evaluate return exit code 2 with an actionable message until the learning protocol is implemented.
 
+## 2026-08-26 — Proved offline CLI paths do not need Geometry Dash
+
+Added `tests/test_offline_cli.py`. It runs the episode scanner and offline detector benchmark help paths with `GEOMETRY_DASH_EXE` set to a deliberately missing executable and verifies both exit successfully without touching the live environment.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
