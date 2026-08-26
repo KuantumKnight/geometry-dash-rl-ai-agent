@@ -202,6 +202,8 @@ class EnvironmentTests(unittest.TestCase):
         sleep.assert_not_called()
 
     def test_capture_refreshes_moved_bbox(self) -> None:
+        """A moved client area terminates safely instead of mixing pixels."""
+
         env = self.make_env()
         env._hwnd = cast(Any, 123)
         env._bbox = (0, 0, 800, 600)
@@ -213,9 +215,11 @@ class EnvironmentTests(unittest.TestCase):
                 "geometry_dash_env.environment.Image.frombytes",
                 return_value=GAMEPLAY_IMAGE,
             ),
+            self.assertRaisesRegex(RuntimeError, "changed.*reset required"),
         ):
             env._capture()
         self.assertEqual(env._bbox, (20, 30, 660, 510))
+        self.assertFalse(env._episode_active)
 
     def test_capture_reacquires_invalid_window_handle(self) -> None:
         """A restarted game is reacquired before the next capture."""

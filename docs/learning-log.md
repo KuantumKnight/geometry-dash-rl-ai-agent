@@ -677,6 +677,10 @@ Before capture, the environment now checks the cached HWND and reacquires the co
 
 Win32 client-rectangle validation now rejects minimized, invisible, non-foreground/occluded, zero-size, and off-screen windows. This conservative foreground requirement prevents sampling pixels that may belong to another window.
 
+## 2026-08-26 — Terminated on client-area changes
+
+The environment no longer silently mixes observations after a window move or resize. A changed client bounding box records the old and new rectangles, ends the episode, and requires an explicit reset.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

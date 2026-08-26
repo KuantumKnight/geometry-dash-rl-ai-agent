@@ -266,7 +266,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Identify the game window using visibility plus owning executable path, and fail closed when multiple matching windows are present.
 - [x] VERIFIED — Reacquire the window handle after invalidation before capture; an offline fake-backend test simulates a restarted game.
 - [x] VERIFIED — Detect minimized, occluded/non-foreground, zero-size, invisible, or off-screen client areas and stop safely before capture.
-- [ ] P0 — Detect client resolution changes and either rebuild observation state or terminate with a clear reason.
+- [x] VERIFIED — Detect client-area changes and terminate the active episode with the previous/current bounding boxes and a reset-required reason.
 - [ ] P0 — Decide whether moving/resizing the window mid-episode is supported; test the chosen behavior.
 - [ ] P0 — Expose capture/input backends through dependency injection for offline tests.
 - [ ] P0 — Add an emergency-stop mechanism and document the key combination.

@@ -117,7 +117,14 @@ class GeometryDashEnv(gym.Env):
                 raise RuntimeError("Geometry Dash window disappeared during capture")
         current_bbox = self._platform.game_client_bbox(self._hwnd)
         if current_bbox != self._bbox:
+            previous_bbox = self._bbox
             self._bbox = current_bbox
+            self._episode_active = False
+            raise RuntimeError(
+                "Geometry Dash client area changed during an episode; "
+                f"previous_bbox={previous_bbox}, current_bbox={current_bbox}; "
+                "reset required"
+            )
         if self._bbox is None:
             raise RuntimeError("Geometry Dash client bounding box is unavailable")
         left, top, right, bottom = self._bbox
