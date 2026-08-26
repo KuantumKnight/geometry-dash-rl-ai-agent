@@ -270,7 +270,7 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Decide whether moving/resizing the window mid-episode is supported; test the chosen behavior.
 - [ ] P0 — Expose capture/input backends through dependency injection for offline tests.
 - [ ] P0 — Add an emergency-stop mechanism and document the key combination.
-- [ ] P0 — Add a maximum action rate so a bug cannot flood input indefinitely.
+- [x] VERIFIED — Add configurable `max_action_rate` throttling so a control bug cannot flood input indefinitely.
 - [ ] P0 — Restore the user's cursor only if cursor movement remains necessary for reset.
 - [ ] P0 — Prefer a reset input that does not depend on hard-coded screen coordinates; otherwise calibrate and validate normalized coordinates.
 - [x] VERIFIED — Make focus behavior explicit through `focus_on_reset` and `focus_on_action`; callers can disable focus stealing while the safe default remains enabled.

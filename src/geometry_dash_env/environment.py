@@ -53,6 +53,7 @@ class GeometryDashEnv(gym.Env):
         reset_stable_frames: int = 3,
         focus_on_reset: bool = True,
         focus_on_action: bool = True,
+        max_action_rate: float | None = 30.0,
         platform_backend: PlatformBackend | None = None,
         capture_backend: CaptureBackend | None = None,
     ) -> None:
@@ -68,6 +69,8 @@ class GeometryDashEnv(gym.Env):
                 "reset_timeout must be positive, reset_settle cannot be negative, "
                 "and reset_stable_frames must be positive"
             )
+        if max_action_rate is not None and max_action_rate <= 0:
+            raise ValueError("max_action_rate must be positive when configured")
         self.observation_size = observation_size
         self.fps = fps
         self.frame_interval = 1.0 / fps
@@ -79,12 +82,14 @@ class GeometryDashEnv(gym.Env):
         self.reset_stable_frames = reset_stable_frames
         self.focus_on_reset = focus_on_reset
         self.focus_on_action = focus_on_action
+        self.max_action_rate = max_action_rate
         self._screen: CaptureBackend = cast(CaptureBackend, capture_backend or MSS())
         self._platform = platform_backend or Win32Platform()
         self._hwnd = None
         self._bbox: tuple[int, int, int, int] | None = None
         self._episode_active = False
         self._step_count = 0
+        self._last_action_time: float | None = None
         self._frame_buffer: deque[np.ndarray] = deque(maxlen=frame_stack)
         self.action_space = gym.spaces.Discrete(2)
         observation_shape = (observation_size[1], observation_size[0], 3)
@@ -193,6 +198,20 @@ class GeometryDashEnv(gym.Env):
         if remaining > 0:
             time.sleep(remaining)
 
+    def _enforce_action_rate(self) -> None:
+        """Throttle dispatches so a control bug cannot flood the game."""
+
+        if self.max_action_rate is None:
+            self._last_action_time = time.monotonic()
+            return
+        interval = 1.0 / self.max_action_rate
+        now = time.monotonic()
+        if self._last_action_time is not None:
+            remaining = interval - (now - self._last_action_time)
+            if remaining > 0:
+                time.sleep(remaining)
+        self._last_action_time = time.monotonic()
+
     def reset(
         self,
         *,
@@ -222,6 +241,7 @@ class GeometryDashEnv(gym.Env):
 
         self._episode_active = True
         self._step_count = 0
+        self._last_action_time = None
         return self._reset_observation(image), {
             "screen_state": "gameplay_or_transition",
             "observation_size": self.observation_size,
@@ -242,6 +262,7 @@ class GeometryDashEnv(gym.Env):
             raise ValueError("action must be 0 (no-op) or 1 (jump)")
         action = int(action)
 
+        self._enforce_action_rate()
         if action == 1:
             self._platform.send_jump(hwnd, ensure_focus=self.focus_on_action)
         image: Image.Image | None = None

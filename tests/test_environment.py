@@ -174,6 +174,23 @@ class EnvironmentTests(unittest.TestCase):
 
         self.assertEqual(self.platform.jump_calls, [(123, False)])
 
+    def test_action_rate_limit_throttles_dispatches(self) -> None:
+        """Configured action limits insert only the required wait."""
+
+        env = self.make_env(frame_skip=1, max_action_rate=10.0)
+        with (
+            patch(
+                "geometry_dash_env.environment.time.monotonic",
+                side_effect=[1.0, 1.0, 1.05, 1.15],
+            ),
+            patch("geometry_dash_env.environment.time.sleep") as sleep,
+        ):
+            env._enforce_action_rate()
+            env._enforce_action_rate()
+
+        sleep.assert_called_once()
+        self.assertAlmostEqual(sleep.call_args.args[0], 0.05, places=6)
+
     def test_death_detector_recognizes_results_and_rejects_gameplay(self) -> None:
         self.assertTrue(is_death_screen(results_image()))
         self.assertFalse(is_death_screen(GAMEPLAY_IMAGE))

@@ -685,6 +685,10 @@ The environment no longer silently mixes observations after a window move or res
 
 `GeometryDashEnv` now exposes separate `focus_on_reset` and `focus_on_action` switches. Live commands retain safe focus behavior by default, while offline/future integrations can opt out and own focus management themselves.
 
+## 2026-08-26 — Added action-rate protection
+
+Each environment step now passes through an optional `max_action_rate` limiter (30 decisions/sec by default). The limiter resets with each episode and is covered by a deterministic timing test.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
