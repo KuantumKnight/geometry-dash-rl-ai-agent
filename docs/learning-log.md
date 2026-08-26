@@ -605,6 +605,10 @@ Added `docs/media-checksums.sha256` with hashes for the source MP4, its `metadat
 
 Added `docs/command-surface.md` and linked it from the README. Capture, environment benchmark, non-learning baseline, recording, offline detector, episode scan, reset stress, and capture-stability commands are listed with their live/offline requirements. Training and evaluation commands remain absent because no algorithm, checkpoint format, reward protocol, or held-out evaluation protocol has been accepted yet.
 
+## 2026-08-26 — Chose uv as the developer task runner
+
+Added `docs/developer-commands.md` with canonical PowerShell commands for setup, formatting, linting, type checking, tests, coverage, pre-commit, packaging, offline analysis, and live smoke tools. `uv` is the task runner because it already owns the pinned interpreter, lockfile, synchronization, and project command execution. `train` and `evaluate` remain future commands until their protocols are real.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

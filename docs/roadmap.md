@@ -158,7 +158,7 @@ Version 1 is complete only when all statements below are true.
 
 ### 0.3 Add a repeatable developer command surface
 
-- [ ] P0 — Choose a Windows-friendly task runner or document equivalent PowerShell commands.
+- [x] VERIFIED — Choose `uv` as the Windows-friendly task runner and document the canonical PowerShell commands in `docs/developer-commands.md`.
 - [ ] P0 — Add commands for `setup`, `format`, `lint`, `typecheck`, `test`, `test-offline`, `test-live`, `benchmark`, `train`, and `evaluate`.
 - [ ] P0 — Ensure offline commands never require the game executable or a running game window.
 - [ ] P0 — Ensure live commands fail with a short actionable message when Windows, the game path, or the game window is unavailable.

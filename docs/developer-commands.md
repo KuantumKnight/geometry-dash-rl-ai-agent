@@ -1,0 +1,47 @@
+# Developer commands
+
+`uv` is the Windows-friendly task runner for this repository. It discovers the pinned Python interpreter, installs from `uv.lock`, and executes commands inside the project environment. Run these from the repository root in PowerShell.
+
+## Setup and quality
+
+```powershell
+uv sync --dev
+uv run ruff format src tests tools
+uv run ruff check src tests tools
+uv run pyright
+uv run coverage run -m unittest discover -s tests -v
+uv run coverage report
+uv run pre-commit run --all-files
+uv run python -m build
+```
+
+## Tests and offline analysis
+
+```powershell
+uv run python -m unittest discover -s tests -v
+uv run coverage run -m unittest discover -s tests -v
+uv run coverage report
+uv run python tools\scan_episode.py --help
+uv run python tools\benchmark_detector_offline.py --help
+```
+
+These commands do not launch Geometry Dash or send desktop input. The default test discovery contains only offline contract tests.
+
+## Live smoke/benchmark commands
+
+Start a legitimate, visible Geometry Dash installation first and verify desktop focus is safe:
+
+```powershell
+uv run python tools\capture_action.py --help
+uv run python tools\benchmark_env.py --help
+uv run python tools\baseline_agent.py --help
+uv run python tools\record_frames.py --help
+uv run python tools\stress_reset.py --help
+uv run python tools\verify_capture_stability.py --help
+```
+
+Use the actual operation flags only after reading each tool's help. Live commands fail early when the configured executable or visible window is unavailable.
+
+## Future commands
+
+`train` and `evaluate` are deliberately not listed as runnable commands yet. They become part of this surface only after the reward, algorithm, checkpoint, and held-out evaluation decisions are implemented and documented.
