@@ -200,3 +200,32 @@ The next milestone is a repeatable environment smoke test of about 100 random ac
 ### Live validation
 
 The direct jump command completed successfully. A controlled environment check then returned a `(90, 160, 3)` observation from `reset()` and completed `step(1)` across four frames with `terminated=False` and `truncated=False`. One sample took about 194 ms; this is only a sanity check, not the final throughput result.
+
+## 2026-08-26 — Added the 100-step environment benchmark
+
+### Implementation
+
+Added `tools/benchmark_env.py`. It resets the environment, chooses random no-op/jump actions, measures each `env.step()` with `time.perf_counter()`, resets after deaths or truncations, and reports mean, median, minimum, maximum, decisions per second, deaths, and resets.
+
+### Reasoning
+
+This measures the real distribution of environment-step times before changing any capture, timing, or input code. The benchmark is intentionally not an optimization and does not start PPO or DQN.
+
+### First measurement
+
+Command: `py -3.13 tools\\benchmark_env.py --seed 42`
+
+The first run reached step 21 but stopped when an automatic reset timed out. After manually confirming that the existing reset controller could recover the results screen, the unchanged benchmark completed all 100 steps:
+
+```text
+steps:             100
+mean step time:    165.23 ms
+median step time:  167.76 ms
+min:               45.21 ms
+max:               184.07 ms
+decisions/sec:     6.05
+deaths:            6
+resets:            7
+```
+
+This is the baseline measurement only. It shows that the current loop is slower than the initial 15 decisions/second target, while the first failed run also shows that reset reliability needs separate investigation. No optimization was made based on this result.
