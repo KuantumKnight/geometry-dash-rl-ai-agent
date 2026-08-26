@@ -701,6 +701,10 @@ Live hosts can inject a thread-safe `EmergencyStop` latch and bind `Ctrl+Shift+F
 
 Added `ScreenState` and `StateMachine` with the ten roadmap states, immutable transition records, confidence/reason validation, and a bounded history for diagnostics. Offline tests reject illegal jumps such as `DISCONNECTED -> GAMEPLAY`.
 
+## 2026-08-26 — Locked legal state transitions
+
+`LEGAL_TRANSITIONS` now enumerates the permitted edges for every state. Illegal detector jumps raise `StateTransitionError`; timeout policy is kept at the controller boundary so state semantics and timing remain independently testable.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

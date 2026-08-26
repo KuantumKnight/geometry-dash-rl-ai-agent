@@ -280,7 +280,7 @@ Version 1 is complete only when all statements below are true.
 ### 1.2 Replace the coarse state classifier with a tested state machine
 
 - [x] VERIFIED — Define canonical states in `ScreenState`: `DISCONNECTED`, `MAIN_MENU`, `LEVEL_INFO`, `ATTEMPT_INTRO`, `GAMEPLAY`, `DEATH_ANIMATION`, `RESULTS`, `LEVEL_COMPLETE`, `RESETTING`, and `ERROR`.
-- [ ] P0 — Define legal transitions and timeouts for every state.
+- [x] VERIFIED — Define legal transitions for every canonical state in `LEGAL_TRANSITIONS`; transition timeouts remain owned by the controller that supplies detector frames.
 - [ ] P0 — Separate `ATTEMPT_INTRO` from `GAMEPLAY`; do not expose transition frames as valid initial observations unless deliberately specified.
 - [ ] P0 — Detect death close to collision or explicitly document terminal-detection delay.
 - [ ] P0 — Detect successful level completion separately from death.
