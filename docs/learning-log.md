@@ -438,3 +438,7 @@ episode failures:    0
 ```
 
 Phase 1 is complete. The next phase can establish a non-learning baseline, but PPO/DQN remains deferred until that baseline and evaluation protocol are defined.
+
+## 2026-08-26 — Started the media archive
+
+The 20-second 60 FPS episode recording at `artifacts/episodes/20260826T113120Z/episode.mp4` is worth preserving as a technical montage candidate. It shows the complete screen-state flow and reset story used to build Phase 1. Media selection and intended presentation use are now tracked in [`docs/media-log.md`](media-log.md); routine generated artifacts remain local and gitignored.
