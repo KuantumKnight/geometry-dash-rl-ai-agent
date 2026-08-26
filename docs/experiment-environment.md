@@ -32,3 +32,18 @@ Game version, window mode, VSync/FPS setting, level speed, and other in-game set
 The local executable has empty `ProductVersion`, `FileVersion`, `ProductName`, and `CompanyName` version-resource fields. No Steam app manifest was present in the checked standard Steam locations. The current process is confirmed as `Geometry Dash.exe`, but these facts do not identify its game release.
 
 The exact version must be recorded from the in-game UI or the store page in a future evidence capture. This roadmap check intentionally remains open.
+
+## In-game configuration evidence gap
+
+A focused live capture on 2026-08-26 visibly showed the `Stereo Madness` results overlay (`Attempt 305`, `1%`) in an `800×600` client capture. That confirms the target level and current capture geometry, but it does not prove the settings required by the roadmap check:
+
+| Setting | Current evidence | Status |
+| --- | --- | --- |
+| Window mode | Visible window; exact windowed/borderless/fullscreen mode not recorded | Open |
+| Client resolution | `800×600` capture | Recorded |
+| VSync / game FPS setting | Not visible in the capture or executable metadata | Open |
+| Level | `Stereo Madness` visible in the results overlay | Recorded |
+| Character/mode | Project scope says cube, but this capture does not prove the in-game mode | Open |
+| Game speed | Not visible in the capture | Open |
+
+The environment's own `fps=60` and `frame_skip=4` are Python controller settings, not evidence of the game's VSync or speed settings. The roadmap check remains open until the in-game settings are captured directly.

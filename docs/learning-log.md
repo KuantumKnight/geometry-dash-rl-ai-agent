@@ -584,3 +584,7 @@ Added CPython `3.13.14` to the experiment fingerprint. This is the interpreter u
 ## 2026-08-26 — Documented the unrecoverable Geometry Dash version
 
 The local `GeometryDash.exe` has no usable Windows version-resource fields, and no standard Steam app manifest was present. The running process and executable path are confirmed, but an exact game release cannot be inferred responsibly. The roadmap item remains open until an in-game UI or store-version capture is recorded.
+
+## 2026-08-26 — Recorded the live level while preserving settings uncertainty
+
+A focused screenshot confirmed `Stereo Madness`, an `800×600` client capture, `Attempt 305`, and a `1%` results state. Window mode, VSync/FPS, character mode, and game speed were not visible or recoverable, so `docs/experiment-environment.md` records them as open evidence gaps rather than treating the Python controller's 60 FPS target as a game setting.
