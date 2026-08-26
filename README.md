@@ -88,6 +88,8 @@ Geometry Dash/           Local proprietary game installation; gitignored
 
 The project uses [uv](https://docs.astral.sh/uv/) with Python 3.13. Runtime and development dependencies are locked in `uv.lock`.
 
+For a single PowerShell command surface, use `.\scripts\dev.ps1 -Task help`. It exposes setup, quality, offline-test, live-smoke, and benchmark tasks; live tasks require `-ConfirmLive`, while future `train` and `evaluate` tasks fail closed until implemented.
+
 ```powershell
 git clone https://github.com/KuantumKnight/geometry-dash-rl-ai-agent.git
 cd geometry-dash-rl-ai-agent

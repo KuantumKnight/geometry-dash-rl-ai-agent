@@ -609,6 +609,10 @@ Added `docs/command-surface.md` and linked it from the README. Capture, environm
 
 Added `docs/developer-commands.md` with canonical PowerShell commands for setup, formatting, linting, type checking, tests, coverage, pre-commit, packaging, offline analysis, and live smoke tools. `uv` is the task runner because it already owns the pinned interpreter, lockfile, synchronization, and project command execution. `train` and `evaluate` remain future commands until their protocols are real.
 
+## 2026-08-26 — Added the PowerShell task runner
+
+Added `scripts/dev.ps1` with named tasks for setup, format, lint, typecheck, test, test-offline, test-live, benchmark, train, and evaluate. Live tasks require an explicit `-ConfirmLive`; train/evaluate return exit code 2 with an actionable message until the learning protocol is implemented.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.
