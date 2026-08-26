@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 from PIL import Image
 
 
@@ -34,16 +35,47 @@ def _region_ratio(image: Image.Image, region, predicate) -> float:
 def death_screen_features(image: Image.Image) -> dict[str, float]:
     """Return normalized visual features used by the baseline detector."""
 
-    sampled = image.convert("RGB").resize((320, 180), Image.Resampling.BILINEAR)
+    sampled = image.convert("RGB").resize(
+        (320, 180),
+        Image.Resampling.BILINEAR,
+    )
+
+    arr = np.asarray(sampled, dtype=np.uint16)
+
+    r = arr[..., 0]
+    g = arr[..., 1]
+    b = arr[..., 2]
+
+    green_mask = (
+        (g > 170)
+        & (g * 100 > r * 125)
+        & (g * 100 > b * 110)
+    )
+
+    dark_mask = arr.sum(axis=2) < 80
+
+    height, width = green_mask.shape
+
+    def region_mean(mask, region):
+        left = int(region[0] * width)
+        top = int(region[1] * height)
+        right = int(region[2] * width)
+        bottom = int(region[3] * height)
+
+        return float(mask[top:bottom, left:right].mean())
+
     return {
-        "bottom_green_ratio": _region_ratio(
-            sampled, (0.10, 0.65, 0.90, 0.95), _is_bright_green
+        "bottom_green_ratio": region_mean(
+            green_mask,
+            (0.10, 0.65, 0.90, 0.95),
         ),
-        "progress_green_ratio": _region_ratio(
-            sampled, (0.18, 0.18, 0.82, 0.30), _is_bright_green
+        "progress_green_ratio": region_mean(
+            green_mask,
+            (0.18, 0.18, 0.82, 0.30),
         ),
-        "center_dark_ratio": _region_ratio(
-            sampled, (0.10, 0.10, 0.90, 0.90), _is_nearly_black
+        "center_dark_ratio": region_mean(
+            dark_mask,
+            (0.10, 0.10, 0.90, 0.90),
         ),
     }
 

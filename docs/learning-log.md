@@ -259,3 +259,44 @@ resets:             2
 ```
 
 The result explains the earlier roughly 168 ms decision time: four profiled frames total about 174 ms. The current detector is measurable at roughly 9 ms per frame, and capture is roughly 15 ms per frame. These are observations only; no optimization has been made yet.
+
+## 2026-08-26 — Vectorized death detector with NumPy
+
+### Implementation
+
+Replaced the Python pixel loops in `death_screen_features()` with NumPy masks and region means. The `is_death_screen()` thresholds were left unchanged. Capture, frame timing, reward, reset, and RL code were not modified.
+
+### Post-change measurements
+
+Component profile command: `py -3.13 tools\\profile_env_step.py --seed 42`
+
+```text
+frames:             100
+mean sleep:         17.01 ms
+mean capture:       47.68 ms
+mean death detect:  11.27 ms
+mean observation:   4.98 ms
+mean frame total:   80.94 ms
+unaccounted:        0.01 ms
+deaths:             0
+resets:             1
+```
+
+Environment benchmark command: `py -3.13 tools\\benchmark_env.py --seed 42`
+
+```text
+steps:             100
+mean step time:    127.00 ms
+median step time:  129.56 ms
+min:               35.49 ms
+max:               148.19 ms
+decisions/sec:     7.87
+deaths:            4
+resets:            5
+```
+
+The complete benchmark improved from 165.23 ms to 127.00 ms mean step time. However, this profile run measured death detection at 11.27 ms versus the earlier 9.32 ms baseline, while capture and observation timings also changed substantially. The measurements are recorded as-is; no causal performance claim is made yet.
+
+### Correctness check
+
+Compared the vectorized feature values with the previous pixel-loop calculation across 407 saved frames: maximum feature difference was `0.000000000000`, with zero mismatches.
