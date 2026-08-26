@@ -464,3 +464,12 @@ Added `frame_stack` to `GeometryDashEnv`. The default `frame_stack=1` preserves 
 ### Validation
 
 The environment test suite now passes 10 tests, including stack ordering. A live `frame_stack=4` reset and no-op step both returned `(4, 90, 160, 3)` observations accepted by the Gymnasium observation space. No grayscale conversion, cropping, object detection, or RL training was introduced.
+
+## 2026-08-26 — Defined the Phase 3 cube action space
+
+The initial action space remains `gymnasium.spaces.Discrete(2)`:
+
+- `0` = do nothing
+- `1` = jump
+
+This is sufficient for cube gameplay. Hold/release actions are intentionally deferred until ship, wave, UFO, or robot modes are added. No action-space code was expanded in this step.

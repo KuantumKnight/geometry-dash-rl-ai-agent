@@ -30,6 +30,10 @@ baseline stays reproducible while representations are compared.
 - `0`: no-op
 - `1`: jump using the space bar
 
+Phase 3 intentionally keeps cube gameplay to these two actions. Hold/release
+semantics are deferred until other Geometry Dash modes—ship, wave, UFO, or
+robot—are explicitly supported.
+
 ## Current reward and termination
 
 - Alive/transition frame: reward `0.0`, `terminated=False`

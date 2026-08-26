@@ -56,6 +56,13 @@ The final environment passed 9 unit tests, completed a 100-step benchmark at 83.
 - [ ] Run a short reproducible training experiment
 - [ ] Record results and failure modes
 
+## Phase 3 — Action space
+
+- [x] Define cube action `0` as no-op
+- [x] Define cube action `1` as jump
+- [x] Keep the initial action space as `Discrete(2)`
+- [ ] Add hold/release actions only when supporting ship, wave, UFO, or robot modes
+
 ## Stage 4 — Iteration and evaluation
 
 - [ ] Improve observations, rewards, or model architecture based on evidence
