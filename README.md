@@ -142,6 +142,7 @@ The game executable, extracted game assets, checkpoints, raw recordings, and gen
 - [Developer commands](docs/developer-commands.md)
 - [Docstring policy](docs/docstring-policy.md)
 - [Code-quality review](docs/quality-review.md)
+- [Dependency security audit](docs/security-audit.md)
 - [Screen-state map](docs/screen-state-map.md)
 - [Montage capture plan](docs/montage-plan.md)
 - [Media evidence log](docs/media-log.md)

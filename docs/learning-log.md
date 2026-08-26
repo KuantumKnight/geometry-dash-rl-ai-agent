@@ -645,6 +645,10 @@ Updated `tools/reset_episode.py` so a timeout reports that the results screen di
 
 Updated `.github/workflows/quality.yml` to save verbose unittest output, `coverage.xml`, and raw `.coverage` data when a Windows quality job fails. Coverage rendering is attempted after tests even on failure, while the build remains a separate visible step.
 
+## 2026-08-26 — Scheduled dependency security auditing
+
+Pinned `pip-audit` in the dev dependency group and added a weekly/manual Windows workflow that installs from `uv.lock` before running `uv run pip-audit --strict`. The command and its failure semantics are documented in `docs/security-audit.md`.
+
 ## 2026-08-26 — Exported a historical dependency snapshot
 
 Added `docs/dependency-snapshot-20260826.txt` from `uv pip freeze --exclude-editable`. It is explicitly labeled as provenance only; the project continues to install from `pyproject.toml` and `uv.lock`.

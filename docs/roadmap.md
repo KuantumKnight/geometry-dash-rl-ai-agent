@@ -188,7 +188,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Run a matrix only for explicitly supported Python versions (3.12 and 3.13).
 - [x] VERIFIED — Prove CI never looks for or downloads Geometry Dash.
 - [x] VERIFIED — Keep live-game tests out of the default offline test discovery.
-- [ ] P0 — Add a scheduled dependency/security audit with actionable failure behavior.
+- [x] VERIFIED — Add a scheduled dependency/security audit with actionable failure behavior using the locked dev environment and `pip-audit --strict`.
 - [ ] P1 — Add a lightweight Linux job for offline modules only after Win32 imports are properly isolated.
 - [ ] P1 — Add branch protection instructions requiring the core CI checks.
 
