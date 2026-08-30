@@ -352,7 +352,7 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — All environment contract tests pass in CI without the game.
 - [ ] P0 — Live qualification passes the 1,000-step and 100-reset gates on the reference setup.
 - [ ] P0 — Environment API documentation matches observed behavior exactly.
-- [ ] P0 — Record an ADR accepting environment contract v1 and listing remaining limitations.
+- [x] VERIFIED — Record ADR 0005 accepting environment contract v1 and listing remaining limitations.
 
 ---
 
