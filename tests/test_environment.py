@@ -451,6 +451,7 @@ class EnvironmentTests(unittest.TestCase):
         self.platform.window_handle = 456
         shot = type("Shot", (), {"size": (800, 600), "rgb": b""})()
         with (
+            patch("geometry_dash_env.environment.validate_game_path"),
             patch.object(env._screen, "grab", return_value=shot),
             patch(
                 "geometry_dash_env.environment.Image.frombytes",
