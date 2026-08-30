@@ -45,7 +45,7 @@ The implementation is not the only deliverable. A milestone is fully documented 
 - [x] VERIFIED — A Gymnasium-style `GeometryDashEnv` implements `reset()` and `step()`.
 - [x] VERIFIED — Cube actions are represented as `Discrete(2)`: no-op and jump.
 - [x] VERIFIED — RGB observations resize to `160×90` and optional frame stacking preserves order.
-- [x] VERIFIED — The current Python 3.13 installation passes all 10 unit tests.
+- [x] VERIFIED — The current Python 3.13 installation passes all 42 offline unit tests.
 - [x] HISTORICAL — The environment completed a 100-step benchmark at 83.42 ms mean step time / 11.99 decisions per second.
 - [x] HISTORICAL — The reset path completed 50 consecutive deaths with zero recorded reset failures.
 - [x] HISTORICAL — The capture path held one bounding box and image size across 100 samples.
@@ -75,9 +75,9 @@ The implementation is not the only deliverable. A milestone is fully documented 
 - [x] VERIFIED — Recreate `.venv` with locked dependencies on Python 3.13.14; preserve the broken environment locally for recovery.
 - [x] VERIFIED — Stop relying on the globally installed Python environment; tests and tools now run through `uv run`.
 - [x] VERIFIED — Add an installable package definition and resolved `uv.lock`.
-- [ ] P0 — Add CI; no automated GitHub checks currently protect the repository.
+- [x] VERIFIED — Add CI workflow for Windows quality checks; public branch protection and a passing public run remain exit-gate work.
 - [ ] P0 — Choose and add an open-source license before describing the repository as open source.
-- [ ] P0 — Fix the README status: the environment and non-learning baselines exist, but no learning agent or checkpoint exists.
+- [x] VERIFIED — Fix the README status: the environment and non-learning baselines exist, but no learning agent or checkpoint exists.
 - [ ] P0 — Validate screen-state and progress heuristics on a labeled multi-episode dataset instead of one recorded run.
 - [ ] P0 — Add a continuous progress signal or deliberately choose a sparse-reward experiment before serious training.
 - [ ] P0 — Define an experiment protocol before comparing learning algorithms.
@@ -267,8 +267,8 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Reacquire the window handle after invalidation before capture; an offline fake-backend test simulates a restarted game.
 - [x] VERIFIED — Detect minimized, occluded/non-foreground, zero-size, invisible, or off-screen client areas and stop safely before capture.
 - [x] VERIFIED — Detect client-area changes and terminate the active episode with the previous/current bounding boxes and a reset-required reason.
-- [ ] P0 — Decide whether moving/resizing the window mid-episode is supported; test the chosen behavior.
-- [ ] P0 — Expose capture/input backends through dependency injection for offline tests.
+- [x] VERIFIED — Reject moving/resizing the window mid-episode; test the chosen behavior and record ADR 0004.
+- [x] VERIFIED — Expose capture/input backends through dependency injection for offline tests.
 - [x] VERIFIED — Add the thread-safe `EmergencyStop` latch and document the host binding (`Ctrl+Shift+F12`) required for live sessions.
 - [x] VERIFIED — Add configurable `max_action_rate` throttling so a control bug cannot flood input indefinitely.
 - [x] VERIFIED — Restore the user's cursor in a `finally` block after normalized reset clicks; cursor movement remains isolated to the reset operation.
@@ -315,18 +315,18 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Freeze the canonical image layout as RGB `HWC`; frame stacking is explicit as `(stack, H, W, C)` and wrappers must transpose for channel-first learners.
 - [ ] P0 — Fix frame-stacked shape semantics for the chosen training library; `(stack, H, W, C)` may not be accepted by standard CNN policies.
 - [ ] P0 — Validate `observation_space.contains(observation)` on reset and every step in a stress test.
-- [ ] P0 — Define whether the terminal observation is gameplay, death animation, or results; test it.
+- [x] VERIFIED — Define the terminal observation as the detected results frame; test the returned observation/info contract.
 - [ ] P0 — Define and test `terminated` for death and completion.
 - [ ] P0 — Define and test `truncated` for time limit, focus loss, invalid state, and operator stop.
-- [ ] P0 — Use structured termination/truncation reasons in `info`.
+- [x] VERIFIED — Use structured `termination_reason`/`truncation_reason` fields in `info` for current results and time-limit outcomes.
 - [x] VERIFIED — Correct the documented duration of `max_steps=900`; the historical 11.99 decisions/sec measurement implies about 75 seconds, with scheduling variance explicitly noted.
-- [ ] P0 — Decide how `reset(seed=...)` is described because it cannot seed Geometry Dash itself.
-- [ ] P0 — Either implement supported `reset(options=...)` behavior or document/reject unused options.
-- [ ] P0 — Make `close()` safe to call multiple times.
-- [ ] P0 — Support context-manager cleanup or document the required lifecycle.
+- [x] VERIFIED — Document that `reset(seed=...)` seeds Gymnasium bookkeeping only; it cannot seed Geometry Dash.
+- [x] VERIFIED — Reject non-empty `reset(options=...)` explicitly until options are supported.
+- [x] VERIFIED — Make `close()` safe to call multiple times.
+- [x] VERIFIED — Support context-manager cleanup with `with GeometryDashEnv(...)`.
 - [ ] P0 — Run Gymnasium's environment checker on an offline/fake backend and resolve applicable warnings.
-- [ ] P0 — Add tests for invalid constructor values and invalid action types/values.
-- [ ] P0 — Add tests for time-limit truncation, post-terminal step rejection, double reset, double close, and reset after truncation.
+- [x] VERIFIED — Add tests for invalid constructor values and invalid action types/values.
+- [x] VERIFIED — Add tests for time-limit truncation, post-terminal step rejection, double reset, double close, and explicit reset-after-truncation rejection.
 - [ ] P0 — Add tests for results reset, transition timeout, unknown state, main menu, focus loss, window disappearance, and bbox change.
 - [ ] P0 — Add tests for frame-stack reset, buffer independence, dtype, ordering, and no accidental aliasing.
 

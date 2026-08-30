@@ -32,12 +32,15 @@ def results_image() -> Image.Image:
 
 
 class FakeScreen:
+    def __init__(self) -> None:
+        self.close_calls = 0
+
     def grab(self, monitor: Any) -> Any:
         del monitor
         return None
 
     def close(self) -> None:
-        pass
+        self.close_calls += 1
 
 
 class FakePlatform:
@@ -165,6 +168,63 @@ class EnvironmentTests(unittest.TestCase):
         ):
             env.reset()
 
+    def test_reset_rejects_unsupported_options(self) -> None:
+        env = self.make_env()
+
+        with self.assertRaisesRegex(ValueError, "options are unsupported"):
+            env.reset(options={"level": "Stereo Madness"})
+
+    def test_invalid_constructor_values_are_rejected(self) -> None:
+        invalid_values: tuple[dict[str, Any], ...] = (
+            {"observation_size": (0, 90)},
+            {"fps": 0},
+            {"frame_skip": 0},
+            {"frame_stack": 0},
+            {"max_steps": 0},
+            {"reset_timeout": 0},
+            {"reset_settle": -1},
+            {"reset_stable_frames": 0},
+            {"max_action_rate": 0},
+        )
+
+        for kwargs in invalid_values:
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                GeometryDashEnv(
+                    platform_backend=FakePlatform(),
+                    capture_backend=FakeScreen(),
+                    **kwargs,
+                )
+
+    def test_close_is_idempotent_and_context_manager_safe(self) -> None:
+        screen = FakeScreen()
+        env = GeometryDashEnv(
+            platform_backend=FakePlatform(),
+            capture_backend=screen,
+        )
+
+        env.close()
+        env.close()
+        self.assertEqual(screen.close_calls, 1)
+
+        with GeometryDashEnv(
+            platform_backend=FakePlatform(),
+            capture_backend=screen,
+        ):
+            pass
+        self.assertEqual(screen.close_calls, 2)
+
+    def test_invalid_actions_are_rejected_before_input(self) -> None:
+        env = self.make_env(frame_skip=1)
+        self.activate(env)
+
+        for invalid_action in (2, 1.0, None):
+            with (
+                self.subTest(invalid_action=invalid_action),
+                self.assertRaisesRegex(ValueError, "action must be"),
+            ):
+                env.step(cast(Any, invalid_action))
+        self.assertEqual(self.platform.jump_calls, [])
+
     def test_jump_action_dispatches_space_and_returns_observation(self) -> None:
         env = self.make_env(frame_skip=1)
         self.activate(env)
@@ -180,6 +240,74 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(reward, 0.0)
         self.assertFalse(terminated)
         self.assertFalse(truncated)
+
+    def test_time_limit_truncates_and_disables_episode(self) -> None:
+        env = self.make_env(frame_skip=1, max_steps=1)
+        self.activate(env)
+        with (
+            patch.object(env, "_wait_for_frame_deadline"),
+            patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
+            patch("geometry_dash_env.environment.is_death_screen", return_value=False),
+        ):
+            _observation, _reward, terminated, truncated, info = env.step(0)
+
+        self.assertFalse(terminated)
+        self.assertTrue(truncated)
+        self.assertEqual(info["decision_step"], 1)
+        self.assertFalse(env._episode_active)
+
+    def test_step_after_truncation_is_rejected(self) -> None:
+        env = self.make_env(frame_skip=1, max_steps=1)
+        self.activate(env)
+        with (
+            patch.object(env, "_wait_for_frame_deadline"),
+            patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
+            patch("geometry_dash_env.environment.is_death_screen", return_value=False),
+        ):
+            env.step(0)
+
+        with self.assertRaisesRegex(RuntimeError, "Call reset"):
+            env.step(0)
+
+        with self.assertRaisesRegex(RuntimeError, "resettable state"):
+            env.reset()
+
+    def test_terminal_reason_and_post_terminal_step_are_explicit(self) -> None:
+        env = self.make_env(frame_skip=1)
+        self.activate(env)
+        with (
+            patch.object(env, "_wait_for_frame_deadline"),
+            patch.object(env, "_capture", return_value=results_image()),
+            patch("geometry_dash_env.environment.is_death_screen", return_value=True),
+            patch(
+                "geometry_dash_env.environment.results_progress_ratio", return_value=0.5
+            ),
+        ):
+            _observation, _reward, terminated, truncated, info = env.step(0)
+
+        self.assertTrue(terminated)
+        self.assertFalse(truncated)
+        self.assertEqual(info["termination_reason"], "results_screen")
+        self.assertIsNone(info["truncation_reason"])
+        with self.assertRaisesRegex(RuntimeError, "Call reset"):
+            env.step(0)
+
+    def test_double_reset_is_rejected_while_episode_is_active(self) -> None:
+        env = self.make_env(reset_settle=0)
+        env._hwnd = cast(Any, 123)
+        with (
+            patch.object(env, "_ensure_window"),
+            patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
+            patch(
+                "geometry_dash_env.environment.classify_screen",
+                return_value="gameplay_or_transition",
+            ),
+            patch.object(env, "_wait_for_ready_gameplay", return_value=GAMEPLAY_IMAGE),
+        ):
+            env.reset()
+
+        with self.assertRaisesRegex(RuntimeError, "resettable state"):
+            env.reset()
 
     def test_focus_on_action_is_explicitly_opt_in(self) -> None:
         """A caller can suppress automatic focus stealing for actions."""

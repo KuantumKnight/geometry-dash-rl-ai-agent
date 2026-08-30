@@ -126,6 +126,7 @@ class GeometryDashEnv(gym.Env):
         self._episode_active = False
         self._step_count = 0
         self._last_action_time: float | None = None
+        self._closed = False
         self._frame_buffer: deque[np.ndarray] = deque(maxlen=frame_stack)
         self.action_space = gym.spaces.Discrete(2)
         observation_shape = (observation_size[1], observation_size[0], 3)
@@ -139,8 +140,24 @@ class GeometryDashEnv(gym.Env):
         )
 
     def close(self) -> None:
-        """Release the screen-capture backend owned by this environment."""
-        self._screen.close()
+        """Release the screen-capture backend, safely and only once."""
+        if not self._closed:
+            self._screen.close()
+            self._closed = True
+
+    def __enter__(self) -> GeometryDashEnv:
+        """Return this environment for context-manager use."""
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: object | None,
+    ) -> None:
+        """Close the environment when leaving a context-manager block."""
+        del exc_type, exc_value, traceback
+        self.close()
 
     def _ensure_window(self) -> None:
         game_path = self._platform.game_path
@@ -277,6 +294,11 @@ class GeometryDashEnv(gym.Env):
     ) -> tuple[np.ndarray, dict[str, object]]:
         """Start or retry an episode and return the first pixel observation."""
 
+        if options:
+            raise ValueError(
+                "reset options are unsupported; pass None or an empty dictionary"
+            )
+
         resettable_states = {
             ScreenState.DISCONNECTED,
             ScreenState.MAIN_MENU,
@@ -395,6 +417,8 @@ class GeometryDashEnv(gym.Env):
         if terminated or truncated:
             self._episode_active = False
         progress_ratio = results_progress_ratio(image) if terminated else None
+        termination_reason = "results_screen" if terminated else None
+        truncation_reason = "max_steps" if truncated else None
         reward = (
             (-1.0 + progress_ratio)
             if terminated and progress_ratio is not None
@@ -430,6 +454,8 @@ class GeometryDashEnv(gym.Env):
                 "frames_elapsed": frames_elapsed,
                 "decision_step": self._step_count,
                 "truncated": truncated,
+                "termination_reason": termination_reason,
+                "truncation_reason": truncation_reason,
                 "progress_ratio": progress_ratio,
                 "capture_bbox": self._bbox,
             },

@@ -16,7 +16,7 @@ This repository has three equal goals:
 | --- | --- | --- |
 | Pixel capture and game actions | Prototype complete | Source, tools, and chronological [learning log](docs/learning-log.md) |
 | Gymnasium-style environment | Prototype complete | `reset()`, `step()`, spaces, timing, termination, and frame stacking |
-| Offline unit tests | 10 passing in the locked Python 3.13 environment | `uv run python -m unittest discover -s tests -v` |
+| Offline unit tests | 42 passing in the locked Python 3.13 environment | `uv run python -m unittest discover -s tests -v` |
 | Live reset reliability | Historical qualification | 50 recorded consecutive deaths/resets with zero recorded failures |
 | Live decision speed | Historical qualification | 83.42 ms mean step time / 11.99 decisions per second over 100 steps |
 | Non-learning baseline | Initial measurement complete | Random policy: 4.8% best and 1.9% average terminal progress over 10 episodes |
@@ -97,7 +97,7 @@ uv sync --dev
 uv run python -m unittest discover -s tests -v
 ```
 
-Expected offline result: 10 passing tests. The repository's quality gate is reproducible locally:
+Expected offline result: 42 passing tests. The repository's quality gate is reproducible locally:
 
 ```powershell
 uv run ruff format --check src tests tools

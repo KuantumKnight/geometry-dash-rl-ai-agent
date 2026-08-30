@@ -40,6 +40,10 @@ robot—are explicitly supported.
 - Results screen detected: reward `-1.0 + progress_ratio`, `terminated=True`
 - Time limit reached: `truncated=True`, `terminated=False`
 
+Terminal results include `info["termination_reason"] = "results_screen"`.
+Time-limit truncation includes `info["truncation_reason"] = "max_steps"`.
+The other reason field is `None` for each respective outcome.
+
 The `progress_ratio` is estimated from the normal-mode green progress bar on the results screen and is included in `info`. For example, an attempt ending at 50% receives approximately `-0.5`. This is a terminal progress signal, not yet a continuous reward.
 
 The next reward design must use per-step `progress_delta`, not absolute progress. Reusing absolute progress would allow repeated observations at the same location to receive reward without actual advancement. Survival, death, and completion shaping remain deferred until a reliable per-step progress signal exists.
@@ -51,3 +55,26 @@ Capture remains paced at 60 FPS by default using monotonic frame deadlines. The 
 The default time limit is `max_steps=900` decisions. The historical measured rate of 11.99 decisions/sec implies approximately 75 seconds, not 60; the actual wall time varies with capture and scheduling load. Reaching the limit returns `truncated=True`.
 
 This is intentionally not the final reward design. The next iteration should add continuous progress tracking and evaluate the environment with a non-learning baseline once the interaction loop is stable.
+
+## Lifecycle and reset options
+
+`close()` is idempotent, and the environment can be used as a context manager:
+
+```python
+with GeometryDashEnv() as env:
+    observation, info = env.reset()
+```
+
+`reset(seed=...)` seeds Gymnasium's local RNG bookkeeping only; it cannot seed
+Geometry Dash's physics or input/capture scheduling. The current live adapter
+does not support reset options. Passing a non-empty `options` dictionary raises
+`ValueError` so unsupported configuration is never silently ignored.
+
+The initial client bounding box must remain fixed during an episode. A move or
+resize raises a reset-required error and marks the episode inactive; see
+[ADR 0004](decisions/0004-window-geometry-policy.md).
+
+After a time-limit truncation, `step()` remains disabled until a reset has
+been accepted from a resettable game state. The live controller does not
+force-click an active gameplay screen merely because the Python time limit was
+reached.
