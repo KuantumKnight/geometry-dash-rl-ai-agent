@@ -327,8 +327,8 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Run Gymnasium's environment checker on an offline/fake backend and resolve applicable warnings.
 - [x] VERIFIED — Add tests for invalid constructor values and invalid action types/values.
 - [x] VERIFIED — Add tests for time-limit truncation, post-terminal step rejection, double reset, double close, and explicit reset-after-truncation rejection.
-- [ ] P0 — Add tests for results reset, transition timeout, unknown state, main menu, focus loss, window disappearance, and bbox change.
-- [ ] P0 — Add tests for frame-stack reset, buffer independence, dtype, ordering, and no accidental aliasing.
+- [x] VERIFIED — Add tests for results reset, transition timeout, unknown state, main menu, focus loss, window disappearance, and bbox change.
+- [x] VERIFIED — Add tests for frame-stack reset, buffer independence, dtype, ordering, and no accidental aliasing.
 
 ### 1.5 Requalify timing, capture, and reset reliability
 

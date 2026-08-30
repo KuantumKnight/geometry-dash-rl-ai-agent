@@ -462,6 +462,75 @@ class EnvironmentTests(unittest.TestCase):
 
         self.assertEqual(env._hwnd, 456)
 
+    def test_reset_from_results_clicks_and_waits_for_gameplay(self) -> None:
+        env = self.make_env(reset_settle=0, reset_stable_frames=1)
+        env._hwnd = cast(Any, 123)
+        with (
+            patch("geometry_dash_env.environment.validate_game_path"),
+            patch.object(env, "_capture", side_effect=[GAMEPLAY_IMAGE, GAMEPLAY_IMAGE]),
+            patch(
+                "geometry_dash_env.environment.classify_screen",
+                side_effect=["results", "gameplay_or_transition"],
+            ),
+            patch("geometry_dash_env.environment.time.monotonic", side_effect=[0, 0]),
+            patch("geometry_dash_env.environment.time.sleep"),
+        ):
+            _observation, info = env.reset()
+
+        self.assertEqual(self.platform.click_calls, [123])
+        self.assertEqual(info["screen_state"], "gameplay")
+        self.assertTrue(env._episode_active)
+
+    def test_reset_rejects_unknown_screen_state(self) -> None:
+        env = self.make_env()
+        env._hwnd = cast(Any, 123)
+        with (
+            patch.object(env, "_ensure_window"),
+            patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
+            patch(
+                "geometry_dash_env.environment.classify_screen",
+                return_value="unknown",
+            ),
+            self.assertRaisesRegex(RuntimeError, "unknown"),
+        ):
+            env.reset()
+
+    def test_capture_fails_when_reacquisition_finds_no_window(self) -> None:
+        env = self.make_env()
+        env._hwnd = cast(Any, 123)
+        self.platform.valid = False
+        self.platform.window_handle = None
+        with (
+            patch("geometry_dash_env.environment.validate_game_path"),
+            self.assertRaisesRegex(RuntimeError, "No visible Geometry Dash window"),
+        ):
+            env._capture()
+
+    def test_single_frame_observation_does_not_alias_internal_buffer(self) -> None:
+        env = self.make_env()
+        initial = env._reset_observation(GAMEPLAY_IMAGE)
+        initial.fill(0)
+        updated = env._observation(results_image())
+        self.assertFalse(np.array_equal(updated, initial))
+
+    def test_transition_timeout_is_bounded(self) -> None:
+        env = self.make_env(reset_timeout=3)
+        env._hwnd = cast(Any, 123)
+        env._bbox = (0, 0, 800, 600)
+        with (
+            patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
+            patch(
+                "geometry_dash_env.environment.classify_screen",
+                return_value="unknown",
+            ),
+            patch(
+                "geometry_dash_env.environment.time.monotonic",
+                side_effect=[0, 4],
+            ),
+            self.assertRaisesRegex(TimeoutError, "stable gameplay"),
+        ):
+            env._wait_for_ready_gameplay()
+
 
 if __name__ == "__main__":
     unittest.main()

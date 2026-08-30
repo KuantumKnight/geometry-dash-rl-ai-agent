@@ -202,7 +202,7 @@ class GeometryDashEnv(gym.Env):
 
     def _stacked_observation(self) -> np.ndarray:
         if self.frame_stack == 1:
-            return self._frame_buffer[0]
+            return self._frame_buffer[0].copy()
         return np.stack(tuple(self._frame_buffer), axis=0)
 
     def _reset_observation(self, image: Image.Image) -> np.ndarray:
@@ -329,6 +329,10 @@ class GeometryDashEnv(gym.Env):
                 reason="results detector matched before reset click",
             )
             self._platform.click_client(hwnd)
+            self._state_machine.transition(
+                ScreenState.RESETTING,
+                reason="retry clicked from results screen",
+            )
             time.sleep(self.reset_settle)
             image = self._wait_for_ready_gameplay()
         elif screen_state == "gameplay_or_transition":
