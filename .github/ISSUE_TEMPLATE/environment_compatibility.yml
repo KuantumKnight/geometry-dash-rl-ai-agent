@@ -1,0 +1,25 @@
+name: Environment compatibility
+description: Report a Windows, capture, focus, timing, or input compatibility issue
+title: "compatibility: "
+labels: [compatibility]
+body:
+  - type: textarea
+    id: system
+    attributes:
+      label: Redacted system and game configuration
+      description: Include Windows, Python, display, game version/settings, and dependency versions. Do not include usernames or paths.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observed behavior and evidence
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: I have not attached the Geometry Dash executable or extracted game assets.
+          required: true

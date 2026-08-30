@@ -23,7 +23,7 @@ This repository has three equal goals:
 | RL theory curriculum | Planned, not yet completed | [RL learning journey](docs/learning/README.md) |
 | Learning agent | Not implemented | Algorithm selection intentionally follows environment/reward/evaluation gates |
 | Montage archive | One candidate plus planned shot list | [Media log](docs/media-log.md) and [montage plan](docs/montage-plan.md) |
-| Reproducible local environment/package | Complete locally; CI workflow added, public run pending | `pyproject.toml`, `.python-version`, and `uv.lock` |
+| Reproducible local environment/package | Complete locally; public Windows CI verified | `pyproject.toml`, `.python-version`, and `uv.lock` |
 | Offline quality gates | Complete locally; Windows matrix workflow added | Ruff, Pyright, coverage, pre-commit, and `.github/workflows/quality.yml` |
 
 Historical live results were recorded on one machine and were not rerun during the documentation audit. They are engineering evidence, not general performance claims.
@@ -66,7 +66,7 @@ The existing 20-second state-flow candidate already shows:
 main menu → level info → attempt intro → gameplay → death/results → retry → gameplay
 ```
 
-It still needs a checksum, second backup, and privacy/rights review before it is considered preserved.
+It has a recorded checksum and local second backup. Commit linkage and privacy/rights review remain open before it is considered preserved.
 
 ## Repository map
 
@@ -126,6 +126,27 @@ uv run python tools\baseline_agent.py --help
 
 Live tools expect Windows, a legitimate Geometry Dash installation, the game running in a visible window, and optional `ffmpeg` for MP4 creation. The training dependency group and learning agent are intentionally not added yet.
 
+## Reproduction examples
+
+The following commands make the current support boundary explicit:
+
+    # Offline quality gate
+    .\scripts\dev.ps1 -Task test-offline
+
+    # Live smoke command: requires a visible game and safe desktop focus
+    .\scripts\dev.ps1 -Task test-live -ConfirmLive
+
+    # Live environment benchmark and non-learning baseline
+    .\scripts\dev.ps1 -Task benchmark -ConfirmLive
+    uv run python tools\baseline_agent.py --episodes 10 --max-steps 300 --period 6
+
+    # Training and evaluation fail closed until their protocols exist.
+    .\scripts\dev.ps1 -Task train       # exits 2: not implemented
+    .\scripts\dev.ps1 -Task evaluate    # exits 2: not implemented
+
+There is no resume command yet. Checkpoint/resume becomes supported only after
+the experiment protocol, learning algorithm, and checkpoint format are locked.
+
 ## Safety and legal scope
 
 Live tools can focus the Geometry Dash window and send keyboard/mouse input. Do not run them while using other sensitive desktop applications, and stop immediately if focus or state detection is wrong.
@@ -140,6 +161,11 @@ The game executable, extracted game assets, checkpoints, raw recordings, and gen
 - [Environment API](docs/environment-api.md)
 - [Command surface](docs/command-surface.md)
 - [Developer commands](docs/developer-commands.md)
+- [Windows setup](docs/setup-windows.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Experiment index](docs/experiment-index.md)
+- [Branch protection guidance](docs/branch-protection.md)
 - [Docstring policy](docs/docstring-policy.md)
 - [Code-quality review](docs/quality-review.md)
 - [Dependency security audit](docs/security-audit.md)
@@ -151,6 +177,9 @@ The game executable, extracted game assets, checkpoints, raw recordings, and gen
 - [Architecture decisions](docs/decisions/0001-rl-environment-interface.md)
 - [Packaging decision](docs/decisions/0002-python-packaging-and-locking.md)
 - [Quality gates decision](docs/decisions/0003-quality-gates-and-ci.md)
+
+Citation metadata and a license are intentionally omitted until the author
+confirms the preferred identity and license terms.
 
 ## License
 

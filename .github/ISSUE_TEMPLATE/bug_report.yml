@@ -1,0 +1,26 @@
+name: Bug report
+description: Report a reproducible software defect
+title: "bug: "
+labels: [bug]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and evidence
+      description: What happened, with sanitized logs or screenshots.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Commands, configuration, commit, and expected versus actual behavior.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: I have removed secrets, local paths, game binaries, and proprietary media.
+          required: true

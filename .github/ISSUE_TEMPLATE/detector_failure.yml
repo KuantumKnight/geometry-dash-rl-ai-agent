@@ -1,0 +1,24 @@
+name: Detector failure
+description: Report a screen-state or progress-detector failure
+title: "detector: "
+labels: [detector]
+body:
+  - type: input
+    id: commit
+    attributes:
+      label: Commit and detector contract version
+    validations:
+      required: true
+  - type: textarea
+    id: case
+    attributes:
+      label: Sanitized frame case
+      description: Describe the state, expected classification, actual classification, resolution, and episode context. Do not upload proprietary frames without rights review.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and regression fixture proposal
+    validations:
+      required: true

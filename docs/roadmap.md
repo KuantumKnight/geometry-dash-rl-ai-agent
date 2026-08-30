@@ -190,7 +190,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Keep live-game tests out of the default offline test discovery.
 - [x] VERIFIED — Add a scheduled dependency/security audit with actionable failure behavior using the locked dev environment and `pip-audit --strict`.
 - [ ] P1 — Add a lightweight Linux job for offline modules only after Win32 imports are properly isolated.
-- [ ] P1 — Add branch protection instructions requiring the core CI checks.
+- [x] VERIFIED — Add branch protection instructions requiring the core CI checks.
 
 ### 0.6 Replace the README and add repository governance
 
@@ -200,7 +200,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Add a small evidence table that distinguishes current checks, historical live results, and unfinished work.
 - [x] VERIFIED — Add a compact architecture/data-flow explanation.
 - [x] VERIFIED — Add prerequisites: Windows, legitimate game installation, Python dependencies, and optional ffmpeg.
-- [ ] P0 — Add clean installation, game-path configuration, offline test, live smoke test, baseline, training, evaluation, and resume examples.
+- [x] VERIFIED — Add clean installation, game-path configuration, offline test, live smoke test, baseline, fail-closed training/evaluation, and unavailable-resume examples.
 - [x] VERIFIED — Add a repository map explaining source, tests, tools, learning/media docs, and local artifacts.
 - [x] VERIFIED — Add current reproducibility and single-machine evidence limitations.
 - [x] VERIFIED — Add a clear safety warning that live control focuses the game and sends keyboard/mouse input.
@@ -209,13 +209,13 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Add roadmap, contributing, citation, license, and experiment-index links.
 - [ ] DECISION — Choose a license compatible with the author's intent; do not guess on the author's behalf.
 - [ ] P0 — Add the chosen `LICENSE` file and align README/package metadata with it.
-- [ ] P0 — Add `CONTRIBUTING.md` with setup, issue selection, testing, experiment evidence, and PR expectations.
-- [ ] P0 — Add `CODE_OF_CONDUCT.md`.
-- [ ] P0 — Add `SECURITY.md`, emphasizing that the project sends local input and does not accept game binaries in reports.
+- [x] VERIFIED — Add `CONTRIBUTING.md` with setup, issue selection, testing, experiment evidence, and PR expectations.
+- [x] VERIFIED — Add `CODE_OF_CONDUCT.md`.
+- [x] VERIFIED — Add `SECURITY.md`, emphasizing that the project sends local input and does not accept game binaries in reports.
 - [ ] P0 — Add `CITATION.cff` after author identity and release metadata are confirmed.
-- [ ] P1 — Add `CHANGELOG.md` using a consistent release format.
-- [ ] P1 — Add issue templates for bugs, environment compatibility, detector failures, and experiment reports.
-- [ ] P1 — Add a pull-request template with verification and evidence checkboxes.
+- [x] VERIFIED — Add `CHANGELOG.md` using a consistent release format.
+- [x] VERIFIED — Add issue templates for bugs, environment compatibility, detector failures, and experiment reports.
+- [x] VERIFIED — Add a pull-request template with verification and evidence checkboxes.
 - [ ] P1 — Add labels/milestones matching this roadmap.
 - [ ] P1 — Enable automated dependency update PRs only after CI is reliable.
 

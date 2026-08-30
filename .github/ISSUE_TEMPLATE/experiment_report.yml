@@ -1,0 +1,26 @@
+name: Experiment report
+description: Propose or report a reproducible experiment
+title: "experiment: "
+labels: [experiment]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question, hypothesis, and prediction
+      description: State the falsifiable question and expected outcome before the run.
+    validations:
+      required: true
+  - type: textarea
+    id: protocol
+    attributes:
+      label: Protocol and configuration
+      description: Include parent run, budget, seeds, contract versions, stop criteria, and commit.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Results and decision
+      description: Link raw data and explain adopt, reject, retry, or inconclusive.
+    validations:
+      required: true
