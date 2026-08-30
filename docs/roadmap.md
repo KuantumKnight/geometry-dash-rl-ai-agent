@@ -240,7 +240,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Recreate the project environment from the documented lock workflow; preserve the prior broken environment as a recoverable local backup.
 - [x] VERIFIED — Run every offline quality command in the recreated environment with no global packages.
 - [x] VERIFIED — Build the package and import its wheel in an isolated environment.
-- [ ] P0 — Confirm CI passes on the public repository.
+- [x] VERIFIED — Confirm CI passes on the public repository; run `33328849870` passed Windows Python 3.12 and 3.13 quality jobs.
 - [ ] P0 — Ask a second person, or use a genuinely clean Windows user/VM, to follow the README without unstated help.
 - [ ] P0 — L0 is complete and reviewable as genuine learning evidence.
 - [ ] P0 — Existing irreplaceable footage has a checksum, second backup, and privacy/rights review status.
