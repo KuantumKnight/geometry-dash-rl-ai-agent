@@ -460,9 +460,9 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Initial cube action set is `0=noop`, `1=jump`.
 - [ ] P0 — Measure action-to-visible-jump latency and its variance.
 - [ ] P0 — Validate how one short press behaves at every supported frame-skip value.
-- [ ] P0 — Decide whether an action is sent once per decision or held/repeated across skipped frames; document and test it.
+- [x] VERIFIED — Dispatch each accepted action once per decision before skipped-frame captures; document and test it.
 - [ ] P0 — Detect and prevent stuck keys after interruption.
-- [ ] P0 — Log requested action, dispatched action, dispatch timestamp, and any suppressed action.
+- [x] VERIFIED — Log requested/dispatched actions, dispatch timestamp, and suppressed-action field in transition info; exception-path suppression remains fail-closed.
 - [ ] P1 — Measure whether action history belongs in the observation.
 - [ ] P2 — Add explicit press/hold/release only when a target mode requires it.
 - [ ] P2 — Version mode-specific action spaces; do not silently expand `Discrete(2)`.

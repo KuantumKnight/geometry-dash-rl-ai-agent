@@ -35,6 +35,12 @@ with `press_duration`. Values must be finite and greater than zero and no
 greater than one second; cross-machine live validation remains a qualification
 task.
 
+Each accepted decision logs `requested_action`, `dispatched_action`, an
+`action_dispatch_timestamp`, and `suppressed_action` in `info`. A jump is
+dispatched once at the start of the decision; `frame_skip` captures subsequent
+frames and does not repeat the key press. Interruption and state-safety errors
+suppress the action and raise before returning a normal transition record.
+
 Phase 3 intentionally keeps cube gameplay to these two actions. Hold/release
 semantics are deferred until other Geometry Dash modes—ship, wave, UFO, or
 robot—are explicitly supported.

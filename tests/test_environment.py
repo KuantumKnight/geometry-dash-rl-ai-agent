@@ -236,16 +236,20 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(self.platform.jump_calls, [])
 
     def test_jump_action_dispatches_space_and_returns_observation(self) -> None:
-        env = self.make_env(frame_skip=1)
+        env = self.make_env(frame_skip=4)
         self.activate(env)
         with (
             patch.object(env, "_wait_for_frame_deadline"),
             patch.object(env, "_capture", return_value=GAMEPLAY_IMAGE),
             patch("geometry_dash_env.environment.is_death_screen", return_value=False),
         ):
-            observation, reward, terminated, truncated, _info = env.step(1)
+            observation, reward, terminated, truncated, info = env.step(1)
 
         self.assertEqual(self.platform.jump_calls, [(123, True)])
+        self.assertEqual(info["requested_action"], 1)
+        self.assertEqual(info["dispatched_action"], 1)
+        self.assertIsInstance(info["action_dispatch_timestamp"], float)
+        self.assertIsNone(info["suppressed_action"])
         self.assertEqual(self.platform.jump_press_durations, [0.005])
         self.assertEqual(observation.shape, (90, 160, 3))
         self.assertEqual(reward, 0.0)

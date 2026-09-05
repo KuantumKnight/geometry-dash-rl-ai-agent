@@ -419,6 +419,9 @@ class GeometryDashEnv(gym.Env):
 
         self._check_emergency_stop()
         self._enforce_action_rate()
+        dispatch_timestamp = time.time()
+        dispatched_action = action
+        suppressed_action: int | None = None
         if action == 1:
             self._platform.send_jump(
                 hwnd,
@@ -485,6 +488,10 @@ class GeometryDashEnv(gym.Env):
                     else None
                 ),
                 "frames_elapsed": frames_elapsed,
+                "requested_action": action,
+                "dispatched_action": dispatched_action,
+                "action_dispatch_timestamp": dispatch_timestamp,
+                "suppressed_action": suppressed_action,
                 "decision_step": self._step_count,
                 "truncated": truncated,
                 "termination_reason": termination_reason,
