@@ -489,44 +489,44 @@ Version 1 is complete only when all statements below are true.
 
 ### 4.1 Define the experiment protocol before training
 
-- [ ] P0 — Write the primary research question for v1 in one sentence.
-- [ ] P0 — Predeclare the primary metric: completion rate first, then progress/AUC or another justified fallback.
-- [ ] P0 — Define secondary metrics: median progress, best progress, episode length, deaths, truncations, reset failures, wall time, and environment steps.
-- [ ] P0 — Define training budget in environment steps and wall-clock time.
-- [ ] P0 — Define evaluation episode count and independent seed count.
-- [ ] P0 — Define checkpoint selection without using held-out evaluation results repeatedly.
-- [ ] P0 — Separate training, validation/model-selection, and final held-out evaluation episodes.
-- [ ] P0 — Define failure/exclusion rules before seeing results.
-- [ ] P0 — Define what constitutes “beats baseline” including uncertainty/tie handling.
-- [ ] P0 — Freeze a reference environment config and baseline protocol ID.
-- [ ] P0 — Document determinism limits: game physics may be deterministic, but capture/input scheduling is not fully seed-controlled.
+- [x] VERIFIED — Write the primary research question for v1 in one sentence.
+- [x] VERIFIED — Predeclare the primary metric: completion rate first, then progress/AUC or another justified fallback.
+- [x] VERIFIED — Define secondary metrics: median progress, best progress, episode length, deaths, truncations, reset failures, wall time, and environment steps.
+- [x] VERIFIED — Define training budget in environment steps and wall-clock time.
+- [x] VERIFIED — Define evaluation episode count and independent seed count.
+- [x] VERIFIED — Define checkpoint selection without using held-out evaluation results repeatedly.
+- [x] VERIFIED — Separate training, validation/model-selection, and final held-out evaluation episodes.
+- [x] VERIFIED — Define failure/exclusion rules before seeing results.
+- [x] VERIFIED — Define what constitutes “beats baseline” including uncertainty/tie handling.
+- [x] VERIFIED — Freeze a reference environment config and baseline protocol ID.
+- [x] VERIFIED — Document determinism limits: game physics may be deterministic, but capture/input scheduling is not fully seed-controlled.
 
 ### 4.2 Standardize run configuration and identity
 
-- [ ] P0 — Add versioned config files for environment, observation, reward, algorithm, training, evaluation, recording, and system settings.
-- [ ] P0 — Validate configs and reject unknown keys.
-- [ ] P0 — Resolve config inheritance/overrides into one saved immutable run config.
-- [ ] P0 — Generate a unique run ID and output directory before interaction begins.
-- [ ] P0 — Save start/end UTC, git SHA, dirty-tree flag, command, Python/package versions, OS, hardware, and config hash.
-- [ ] P0 — Save environment/observation/action/reward contract versions.
-- [ ] P0 — Save seed values for library RNGs and the policy.
-- [ ] P0 — Refuse an official comparison run from a dirty tree unless explicitly marked exploratory.
-- [ ] P0 — Add run states: created, running, interrupted, failed, completed, evaluated.
-- [ ] P0 — Write metadata atomically so interruption does not corrupt the run record.
+- [x] VERIFIED — Add versioned config files for environment, observation, reward, algorithm, training, evaluation, recording, and system settings.
+- [x] VERIFIED — Validate configs and reject unknown keys.
+- [x] VERIFIED — Resolve config inheritance/overrides into one saved immutable run config.
+- [x] VERIFIED — Generate a unique run ID and output directory before interaction begins.
+- [x] VERIFIED — Save start/end UTC, git SHA, dirty-tree flag, command, Python/package versions, OS, hardware, and config hash.
+- [x] VERIFIED — Save environment/observation/action/reward contract versions.
+- [x] VERIFIED — Save seed values for library RNGs and the policy.
+- [x] VERIFIED — Refuse an official comparison run from a dirty tree unless explicitly marked exploratory.
+- [x] VERIFIED — Add run states: created, running, interrupted, failed, completed, evaluated.
+- [x] VERIFIED — Write metadata atomically so interruption does not corrupt the run record.
 
 ### 4.3 Standardize metrics and artifacts
 
-- [ ] P0 — Emit per-step or sampled telemetry to a machine-readable format with a documented schema.
-- [ ] P0 — Emit one per-episode table with return, length, progress, outcome, timing, reset result, and checkpoint ID.
-- [ ] P0 — Emit a run summary JSON and human-readable Markdown report.
+- [x] VERIFIED — Emit per-step or sampled telemetry to a machine-readable format with a documented schema.
+- [x] VERIFIED — Emit one per-episode table with return, length, progress, outcome, timing, reset result, and checkpoint ID.
+- [x] VERIFIED — Emit a run summary JSON and human-readable Markdown report.
 - [ ] P0 — Record rolling metrics without replacing raw data.
-- [ ] P0 — Record reward components separately.
+- [x] VERIFIED — Record reward components separately.
 - [ ] P0 — Record detector confidence/errors and missed deadlines.
-- [ ] P0 — Save checkpoints atomically with model, optimizer, scheduler, normalization, replay-buffer state if feasible, and step counters.
+- [x] VERIFIED — Save checkpoints atomically with model, optimizer, scheduler, normalization, replay-buffer state if feasible, and step counters.
 - [ ] P0 — Retain `best`, `latest`, periodic, and final checkpoints according to a documented policy.
-- [ ] P0 — Verify checkpoint loading immediately after saving.
-- [ ] P0 — Support resume without resetting step counters or overwriting prior metrics.
-- [ ] P0 — Record why a run stopped: budget, completion, operator stop, exception, or environment failure.
+- [x] VERIFIED — Verify checkpoint loading immediately after saving.
+- [x] VERIFIED — Support resume without resetting step counters or overwriting prior metrics.
+- [x] VERIFIED — Record why a run stopped: budget, completion, operator stop, exception, or environment failure.
 - [ ] P0 — Add disk-space checks and artifact retention rules.
 - [ ] P1 — Integrate an experiment tracker only if local files remain the source of truth or are exportable.
 
@@ -535,7 +535,7 @@ Version 1 is complete only when all statements below are true.
 - [x] HISTORICAL — Always-no-op, random-jump, and periodic-jump policies have initial 10-episode measurements.
 - [x] VERIFIED — Move baseline policies into importable, unit-tested modules in `geometry_dash_env.baselines`.
 - [x] VERIFIED — Test baseline action sequences and reproducible seed behavior.
-- [ ] P0 — Use the same locked environment/reward/observation contract as learning agents.
+- [x] VERIFIED — Use the same locked environment/reward/observation contract as learning agents.
 - [ ] P0 — Run enough episodes to report stable estimates and uncertainty.
 - [ ] P0 — Evaluate multiple random seeds rather than one random action stream.
 - [ ] P0 — Sweep periodic intervals on validation episodes only, then lock the best periodic baseline.

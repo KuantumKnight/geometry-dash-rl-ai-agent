@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import random
+from dataclasses import dataclass, field
 from typing import Protocol
 
 import numpy as np
@@ -22,6 +22,7 @@ class AlwaysNoopPolicy:
     """Always return the no-op action."""
 
     def action(self, step_index: int, observation: np.ndarray | None = None) -> int:
+        """Return no-op and ignore step observations."""
         del step_index, observation
         return 0
 
@@ -37,6 +38,7 @@ class RandomJumpPolicy:
         self._rng = random.Random(self.seed)
 
     def action(self, step_index: int, observation: np.ndarray | None = None) -> int:
+        """Return the next seeded random action."""
         del step_index, observation
         return self._rng.choice((0, 1))
 
@@ -52,6 +54,7 @@ class PeriodicJumpPolicy:
             raise ValueError("period must be positive")
 
     def action(self, step_index: int, observation: np.ndarray | None = None) -> int:
+        """Return jump only at the configured interval."""
         del observation
         return int((step_index + 1) % self.period == 0)
 
@@ -67,6 +70,7 @@ class BrightnessHeuristicPolicy:
             raise ValueError("threshold must be finite and non-negative")
 
     def action(self, step_index: int, observation: np.ndarray | None = None) -> int:
+        """Return jump when the bottom observation band is dark."""
         del step_index
         if observation is None or observation.size == 0:
             return 0

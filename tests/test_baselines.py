@@ -20,7 +20,9 @@ class BaselinePolicyTests(unittest.TestCase):
         self.assertEqual(policy_actions(AlwaysNoopPolicy(), 5), [0] * 5)
 
     def test_periodic_policy_sequence_is_one_based(self) -> None:
-        self.assertEqual(policy_actions(PeriodicJumpPolicy(period=3), 7), [0, 0, 1, 0, 0, 1, 0])
+        self.assertEqual(
+            policy_actions(PeriodicJumpPolicy(period=3), 7), [0, 0, 1, 0, 0, 1, 0]
+        )
 
     def test_random_policy_seed_reproduces_sequence(self) -> None:
         first = policy_actions(RandomJumpPolicy(seed=17), 20)

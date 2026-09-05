@@ -1,0 +1,37 @@
+{
+  "environment": {
+    "observation_size": [160, 90],
+    "frame_skip": 4,
+    "frame_stack": 1,
+    "max_steps": 900
+  },
+  "observation": {
+    "mode": "rgb",
+    "crop": null,
+    "size": [160, 90]
+  },
+  "reward": {
+    "version": "reward-sparse-terminal-v1"
+  },
+  "algorithm": {
+    "name": "baseline"
+  },
+  "training": {
+    "budget_steps": 0,
+    "budget_seconds": 0,
+    "seeds": [42, 43, 44]
+  },
+  "evaluation": {
+    "episodes": 10,
+    "seeds": [100, 101, 102],
+    "split": "held_out"
+  },
+  "recording": {
+    "telemetry_interval": 1,
+    "save_frames": false
+  },
+  "system": {
+    "min_free_bytes": 100000000,
+    "exploratory": false
+  }
+}
