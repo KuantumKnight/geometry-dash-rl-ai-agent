@@ -49,6 +49,12 @@ Terminal results include `info["termination_reason"] = "results_screen"`.
 Time-limit truncation includes `info["truncation_reason"] = "max_steps"`.
 The other reason field is `None` for each respective outcome.
 
+Terminal detection is frame-based: the controller checks each captured frame
+inside a decision and returns the first detected results frame. Therefore the
+observable detection delay is bounded by the capture cadence and the current
+`frame_skip` budget, plus detector/capture scheduling latency; the current
+contract does not claim collision-frame precision.
+
 The `progress_ratio` is estimated from the normal-mode green progress bar on the results screen and is included in `info`. For example, an attempt ending at 50% receives approximately `-0.5`. This is a terminal progress signal, not yet a continuous reward.
 
 The next reward design must use per-step `progress_delta`, not absolute progress. Reusing absolute progress would allow repeated observations at the same location to receive reward without actual advancement. Survival, death, and completion shaping remain deferred until a reliable per-step progress signal exists.

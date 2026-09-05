@@ -283,7 +283,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Define canonical states in `ScreenState`: `DISCONNECTED`, `MAIN_MENU`, `LEVEL_INFO`, `ATTEMPT_INTRO`, `GAMEPLAY`, `DEATH_ANIMATION`, `RESULTS`, `LEVEL_COMPLETE`, `RESETTING`, and `ERROR`.
 - [x] VERIFIED — Define legal transitions for every canonical state in `LEGAL_TRANSITIONS`; transition timeouts remain owned by the controller that supplies detector frames.
 - [x] VERIFIED — Separate `ATTEMPT_INTRO` from `GAMEPLAY`; reset waits for the stability threshold and returns only after recording a `GAMEPLAY` transition.
-- [ ] P0 — Detect death close to collision or explicitly document terminal-detection delay.
+- [x] VERIFIED — Document frame-based terminal-detection delay and its current `frame_skip`/scheduling bound; collision-frame precision remains unclaimed.
 - [ ] P0 — Detect successful level completion separately from death.
 - [x] VERIFIED — Decide that pause/menu/focus-loss and invalid capture states fail closed as controller errors; encode ADR 0006 and deactivate active episodes.
 - [x] VERIFIED — Attach `screen_state`, `previous_state`, `transition_reason`, and `detector_confidence` to reset/step diagnostic info.
@@ -306,7 +306,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Version annotation records and collection metadata through the schema and manifest protocol.
 - [x] VERIFIED — Decide that visual samples remain local unless privacy/rights clearance is recorded; publish only schema, scripts, aggregate metrics, and redacted metadata otherwise.
 - [x] VERIFIED — Add an offline evaluation CLI that emits confusion matrix, per-state precision/recall/F1, and transition latency.
-- [ ] P0 — Set minimum acceptable recall for terminal states and maximum false-terminal rate before live qualification.
+- [x] VERIFIED — Predeclare held-out terminal recall, false-terminal, and overall-accuracy thresholds in `docs/dataset/detector-thresholds.md`.
 - [ ] P0 — Add regression fixtures for every detector bug that is fixed.
 - [ ] P1 — Have a second labeling pass on ambiguous transition frames and record agreement.
 
