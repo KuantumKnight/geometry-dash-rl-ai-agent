@@ -519,7 +519,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Emit per-step or sampled telemetry to a machine-readable format with a documented schema.
 - [x] VERIFIED — Emit one per-episode table with return, length, progress, outcome, timing, reset result, and checkpoint ID.
 - [x] VERIFIED — Emit a run summary JSON and human-readable Markdown report.
-- [ ] P0 — Record rolling metrics without replacing raw data.
+- [x] VERIFIED — Record rolling metrics without replacing raw data.
 - [x] VERIFIED — Record reward components separately.
 - [ ] P0 — Record detector confidence/errors and missed deadlines.
 - [x] VERIFIED — Save checkpoints atomically with model, optimizer, scheduler, normalization, replay-buffer state if feasible, and step counters.
@@ -540,7 +540,7 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Evaluate multiple random seeds rather than one random action stream.
 - [ ] P0 — Sweep periodic intervals on validation episodes only, then lock the best periodic baseline.
 - [x] VERIFIED — Add a deterministic brightness-based observation heuristic baseline without learning.
-- [ ] P0 — Report confidence intervals or bootstrap intervals for key metrics.
+- [x] VERIFIED — Report confidence intervals or bootstrap intervals for key metrics.
 - [ ] P0 — Preserve episode-level results, not only aggregate output copied into Markdown.
 - [ ] P0 — Re-run the locked baseline whenever the environment/reward/observation version changes.
 - [ ] P0 — Do not compare new agents against the old 10-episode table after a contract change.
