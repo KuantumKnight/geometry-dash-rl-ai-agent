@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/KuantumKnight/geometry-dash-rl-ai-agent/blob/main/schemas/screen-state-annotation.schema.json",
+  "title": "Geometry Dash screen-state annotation",
+  "description": "One annotation record for one captured frame.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "frame_id",
+    "episode_id",
+    "timestamp_utc",
+    "state",
+    "level",
+    "client_resolution",
+    "window_mode",
+    "theme_effects",
+    "split",
+    "image_path"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "screen-state-annotation-v1"
+    },
+    "frame_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "episode_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "disconnected",
+        "main_menu",
+        "level_info",
+        "attempt_intro",
+        "gameplay",
+        "death_animation",
+        "results",
+        "level_complete",
+        "resetting",
+        "error"
+      ]
+    },
+    "level": {
+      "type": "string",
+      "minLength": 1
+    },
+    "client_resolution": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 1},
+        {"type": "integer", "minimum": 1}
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "window_mode": {
+      "type": "string",
+      "enum": ["windowed", "borderless", "fullscreen", "unknown"]
+    },
+    "theme_effects": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "split": {
+      "type": "string",
+      "enum": ["development", "held_out"]
+    },
+    "image_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "annotator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "label_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

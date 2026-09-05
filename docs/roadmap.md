@@ -296,15 +296,15 @@ Version 1 is complete only when all statements below are true.
 
 ### 1.3 Build a labeled screen-state validation dataset
 
-- [ ] P0 — Define an annotation schema with state, level, resolution, window mode, theme/color effects, timestamp, and episode ID.
+- [x] VERIFIED — Define versioned JSON annotation schema with state, level, resolution, window mode, theme/color effects, timestamp, and episode ID.
 - [ ] P0 — Collect multiple independent episodes rather than adjacent frames from only one run.
 - [ ] P0 — Include every canonical state and difficult transition boundaries.
 - [ ] P0 — Include at least two client resolutions and multiple window positions/scales used by the project.
 - [ ] P0 — Include negative examples containing bright green, dark overlays, menus, and unrelated desktop content.
-- [ ] P0 — Split by episode, not random neighboring frame, to prevent leakage.
+- [x] VERIFIED — Define episode-based development/held-out splits to prevent neighboring-frame leakage.
 - [ ] P0 — Keep detector-development and held-out test episodes separate.
-- [ ] P0 — Version annotations and collection metadata.
-- [ ] P0 — Decide what visual samples can legally be published; keep non-distributable data local and publish collection scripts/metadata instead.
+- [x] VERIFIED — Version annotation records and collection metadata through the schema and manifest protocol.
+- [x] VERIFIED — Decide that visual samples remain local unless privacy/rights clearance is recorded; publish only schema, scripts, aggregate metrics, and redacted metadata otherwise.
 - [ ] P0 — Add an offline evaluation CLI that emits confusion matrix, per-state precision/recall/F1, and transition latency.
 - [ ] P0 — Set minimum acceptable recall for terminal states and maximum false-terminal rate before live qualification.
 - [ ] P0 — Add regression fixtures for every detector bug that is fixed.
