@@ -429,8 +429,8 @@ Version 1 is complete only when all statements below are true.
 ### 3.1 Build a replayable observation dataset
 
 - [ ] P0 — Record timestamped frames, actions, state labels, progress, reward components, terminal flags, and episode IDs.
-- [ ] P0 — Record original capture geometry and transform configuration.
-- [ ] P0 — Use a schema with an explicit version and validation command.
+- [x] VERIFIED — Record original capture geometry and transform configuration in reset info; covered by `tests/test_observation.py`.
+- [x] VERIFIED — Use the versioned, validated `ObservationConfig` schema; validate with `uv run python -m unittest tests.test_observation -v` (observation contract only; episode dataset schema remains open).
 - [ ] P0 — Detect incomplete/corrupt episodes and exclude them with recorded reasons.
 - [ ] P0 — Split train/validation/test by whole episode.
 - [ ] P0 — Prevent later frames from the same attempt leaking across splits.
@@ -451,8 +451,8 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Visualize transformed observations and stacks to catch crop/order/channel bugs.
 - [ ] P0 — Check that the player, near obstacles, ground, and motion remain distinguishable.
 - [ ] P0 — Use a small fixed downstream proxy task or short agent smoke test, not visual preference alone.
-- [ ] P0 — Select one observation v1 and freeze its config.
-- [ ] P0 — Add golden-image transform tests and shape/dtype/range tests.
+- [x] VERIFIED — Freeze observation v1 as full-frame RGB, size `(160, 90)`, one HWC frame; see `docs/observation-contract.md`. Comparative selection evidence remains open.
+- [x] VERIFIED — Add synthetic golden-image transform tests and shape/dtype/range tests in `tests/test_observation.py`.
 - [ ] P1 — Keep object detection/structured features as a documented alternative, not an unmeasured assumption.
 
 ### 3.3 Validate action semantics
@@ -470,7 +470,7 @@ Version 1 is complete only when all statements below are true.
 ### Phase 3 exit gate
 
 - [ ] P0 — Publish the observation comparison table and selection rationale.
-- [ ] P0 — The chosen wrapper produces the exact tensor layout expected by the training library.
+- [x] VERIFIED — The environment produces the exact frozen `(H,W,C)` / `(N,H,W,C)` tensor layout and matching observation space in offline tests; training-library adapter verification remains open.
 - [ ] P0 — Transform latency fits inside the live decision budget with acceptable p95/p99.
 - [ ] P0 — Action timing is documented and passes a live repeatability check.
 - [ ] P0 — Record an ADR accepting observation/action contract v1.

@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from collections import deque
 from threading import Event
-from typing import Any, ClassVar, Protocol, cast
+from typing import Any, ClassVar, Literal, Protocol, cast
 
 import gymnasium as gym
 import numpy as np
@@ -13,6 +13,11 @@ from mss import MSS
 from PIL import Image
 
 from .game_state import classify_screen, is_death_screen, results_progress_ratio
+from .observation import (
+    OBSERVATION_CONTRACT_VERSION,
+    OBSERVATION_LAYOUT,
+    ObservationConfig,
+)
 from .platform_control import (
     DEFAULT_PRESS_DURATION,
     PlatformBackend,
@@ -23,8 +28,6 @@ from .reward import REWARD_CONTRACT_VERSION, calculate_reward
 from .state_machine import ScreenState, StateMachine
 
 ENVIRONMENT_VERSION = "phase1-contract-v1"
-OBSERVATION_CONTRACT_VERSION = "observation-v1"
-OBSERVATION_LAYOUT = "HWC"
 ACTION_CONTRACT_VERSION = "action-v1"
 
 
@@ -72,8 +75,8 @@ class GeometryDashEnv(gym.Env):
         0: no-op
         1: jump (space bar)
 
-    The current reward is deliberately provisional: zero while alive and -1
-    when the results screen is detected. Progress-based reward comes later.
+    Observations are resized channels-last RGB arrays by default, with
+    optional grayscale conversion, normalized cropping, and frame stacking.
     """
 
     metadata: ClassVar[dict[str, list[str]]] = {"render_modes": []}
@@ -85,6 +88,8 @@ class GeometryDashEnv(gym.Env):
         fps: float = 60.0,
         frame_skip: int = 4,
         frame_stack: int = 1,
+        observation_mode: Literal["rgb", "grayscale"] = "rgb",
+        observation_crop: tuple[float, float, float, float] | None = None,
         max_steps: int = 900,
         reset_timeout: float = 3.0,
         reset_settle: float = 1.0,
@@ -98,8 +103,10 @@ class GeometryDashEnv(gym.Env):
         capture_backend: CaptureBackend | None = None,
     ) -> None:
         """Create a pixel-based environment with validated timing settings."""
-        if observation_size[0] <= 0 or observation_size[1] <= 0:
-            raise ValueError("observation_size dimensions must be positive")
+        self.observation_config = ObservationConfig(
+            size=observation_size, mode=observation_mode, crop=observation_crop
+        )
+        observation_shape = self.observation_config.shape(frame_stack)
         if fps <= 0 or frame_skip <= 0 or frame_stack <= 0 or max_steps <= 0:
             raise ValueError(
                 "fps, frame_skip, frame_stack, and max_steps must be positive"
@@ -140,9 +147,6 @@ class GeometryDashEnv(gym.Env):
         self._closed = False
         self._frame_buffer: deque[np.ndarray] = deque(maxlen=frame_stack)
         self.action_space = gym.spaces.Discrete(2)
-        observation_shape = (observation_size[1], observation_size[0], 3)
-        if frame_stack > 1:
-            observation_shape = (frame_stack, *observation_shape)
         self.observation_space = gym.spaces.Box(
             low=0,
             high=255,
@@ -217,8 +221,7 @@ class GeometryDashEnv(gym.Env):
         return Image.frombytes("RGB", shot.size, shot.rgb)
 
     def _single_observation(self, image: Image.Image) -> np.ndarray:
-        resized = image.resize(self.observation_size, Image.Resampling.BILINEAR)
-        return np.asarray(resized, dtype=np.uint8).copy()
+        return self.observation_config.transform(image)
 
     def _stacked_observation(self) -> np.ndarray:
         if self.frame_stack == 1:
@@ -388,6 +391,9 @@ class GeometryDashEnv(gym.Env):
             "transition_reason": transition.reason,
             "detector_confidence": transition.confidence,
             "observation_size": self.observation_size,
+            "observation_mode": self.observation_config.mode,
+            "observation_crop": self.observation_config.crop,
+            "observation_shape": self.observation_space.shape,
             "frame_skip": self.frame_skip,
             "frame_stack": self.frame_stack,
             "capture_bbox": self._bbox,
