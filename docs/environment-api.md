@@ -30,6 +30,11 @@ baseline stays reproducible while representations are compared.
 - `0`: no-op
 - `1`: jump using the space bar
 
+The jump press duration defaults to `0.005` seconds and can be configured
+with `press_duration`. Values must be finite and greater than zero and no
+greater than one second; cross-machine live validation remains a qualification
+task.
+
 Phase 3 intentionally keeps cube gameplay to these two actions. Hold/release
 semantics are deferred until other Geometry Dash modes—ship, wave, UFO, or
 robot—are explicitly supported.

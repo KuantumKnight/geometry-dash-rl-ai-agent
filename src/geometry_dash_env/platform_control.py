@@ -71,6 +71,7 @@ class POINT(ctypes.Structure):
 _WIN32_AVAILABLE = os.name == "nt"
 USER32: Any | None = None
 KERNEL32: Any | None = None
+DEFAULT_PRESS_DURATION = 0.005
 
 
 def _load_win32() -> tuple[Any, Any]:
@@ -317,21 +318,34 @@ def send_key(
     virtual_key: int,
     *,
     ensure_focus: bool = True,
+    press_duration: float = DEFAULT_PRESS_DURATION,
 ) -> None:
     """Send one key press, restoring focus only if it was lost."""
 
+    if not math.isfinite(press_duration) or not 0.0 < press_duration <= 1.0:
+        raise ValueError("press_duration must be finite and between 0 and 1 seconds")
     user32, _ = _load_win32()
     if ensure_focus:
         focus_window_if_needed(hwnd)
     user32.keybd_event(virtual_key, 0, 0, 0)
-    time.sleep(0.005)
+    time.sleep(press_duration)
     user32.keybd_event(virtual_key, 0, KEYEVENTF_KEYUP, 0)
 
 
-def send_jump(hwnd: wintypes.HWND, *, ensure_focus: bool = True) -> None:
+def send_jump(
+    hwnd: wintypes.HWND,
+    *,
+    ensure_focus: bool = True,
+    press_duration: float = DEFAULT_PRESS_DURATION,
+) -> None:
     """Send a short space-bar press to the focused game window."""
 
-    send_key(hwnd, VK_SPACE, ensure_focus=ensure_focus)
+    send_key(
+        hwnd,
+        VK_SPACE,
+        ensure_focus=ensure_focus,
+        press_duration=press_duration,
+    )
 
 
 def click_client(
@@ -392,6 +406,7 @@ class PlatformBackend(Protocol):
         hwnd: wintypes.HWND,
         *,
         ensure_focus: bool = True,
+        press_duration: float = DEFAULT_PRESS_DURATION,
     ) -> None:
         """Dispatch one configured jump press."""
         ...
@@ -439,10 +454,15 @@ class Win32Platform:
         hwnd: wintypes.HWND,
         *,
         ensure_focus: bool = True,
+        press_duration: float = DEFAULT_PRESS_DURATION,
     ) -> None:
         """Dispatch one short jump press."""
 
-        send_jump(hwnd, ensure_focus=ensure_focus)
+        send_jump(
+            hwnd,
+            ensure_focus=ensure_focus,
+            press_duration=press_duration,
+        )
 
     def click_client(self, hwnd: wintypes.HWND) -> None:
         """Click the default normalized reset location."""

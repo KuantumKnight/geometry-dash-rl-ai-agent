@@ -275,7 +275,8 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Use calibrated normalized reset coordinates and validate them before any live input operation.
 - [x] VERIFIED — Make focus behavior explicit through `focus_on_reset` and `focus_on_action`; callers can disable focus stealing while the safe default remains enabled.
 - [ ] P1 — Measure whether the input API drops presses at different game/window states.
-- [ ] P1 — Add press-duration configuration and validate a short press across supported machines.
+- [x] VERIFIED — Add validated press-duration configuration and offline coverage for short key presses.
+- [ ] P1 — Validate a short press across supported machines.
 
 ### 1.2 Replace the coarse state classifier with a tested state machine
 

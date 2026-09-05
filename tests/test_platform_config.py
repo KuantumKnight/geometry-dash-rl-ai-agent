@@ -13,6 +13,7 @@ from geometry_dash_env.platform_control import (
     click_client,
     resolve_game_path,
     select_game_window,
+    send_key,
     validate_client_bbox,
     validate_game_path,
 )
@@ -129,6 +130,36 @@ class PlatformConfigTests(unittest.TestCase):
                     relative_y=relative_y,
                 )
 
+            load_win32.assert_not_called()
+
+    def test_key_press_duration_is_forwarded_and_validated(self) -> None:
+        """Short press timing is explicit and rejects unsafe values."""
+
+        user32 = MagicMock()
+        with (
+            patch(
+                "geometry_dash_env.platform_control._load_win32",
+                return_value=(user32, MagicMock()),
+            ),
+            patch("geometry_dash_env.platform_control.focus_window_if_needed"),
+            patch("geometry_dash_env.platform_control.time.sleep") as sleep,
+        ):
+            send_key(cast(Any, 123), 0x20, press_duration=0.012)
+
+        sleep.assert_called_once_with(0.012)
+        self.assertEqual(user32.keybd_event.call_count, 2)
+
+        for invalid_duration in (0.0, -0.001, 1.001, float("nan")):
+            with (
+                self.subTest(invalid_duration=invalid_duration),
+                patch("geometry_dash_env.platform_control._load_win32") as load_win32,
+                self.assertRaisesRegex(ValueError, "press_duration"),
+            ):
+                send_key(
+                    cast(Any, 123),
+                    0x20,
+                    press_duration=invalid_duration,
+                )
             load_win32.assert_not_called()
 
 

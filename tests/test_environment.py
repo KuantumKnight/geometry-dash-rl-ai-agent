@@ -54,6 +54,7 @@ class FakePlatform:
         self.valid = True
         self.window_handle: Any = 123
         self.jump_calls: list[Any] = []
+        self.jump_press_durations: list[float] = []
         self.click_calls: list[Any] = []
 
     def find_game_window(self):
@@ -76,8 +77,15 @@ class FakePlatform:
         del hwnd
         pass
 
-    def send_jump(self, hwnd: Any, *, ensure_focus: bool = True) -> None:
+    def send_jump(
+        self,
+        hwnd: Any,
+        *,
+        ensure_focus: bool = True,
+        press_duration: float = 0.005,
+    ) -> None:
         self.jump_calls.append((hwnd, ensure_focus))
+        self.jump_press_durations.append(press_duration)
 
     def click_client(self, hwnd) -> None:
         self.click_calls.append(hwnd)
@@ -185,6 +193,8 @@ class EnvironmentTests(unittest.TestCase):
             {"reset_settle": -1},
             {"reset_stable_frames": 0},
             {"max_action_rate": 0},
+            {"press_duration": 0},
+            {"press_duration": float("nan")},
         )
 
         for kwargs in invalid_values:
@@ -236,6 +246,7 @@ class EnvironmentTests(unittest.TestCase):
             observation, reward, terminated, truncated, _info = env.step(1)
 
         self.assertEqual(self.platform.jump_calls, [(123, True)])
+        self.assertEqual(self.platform.jump_press_durations, [0.005])
         self.assertEqual(observation.shape, (90, 160, 3))
         self.assertEqual(reward, 0.0)
         self.assertFalse(terminated)

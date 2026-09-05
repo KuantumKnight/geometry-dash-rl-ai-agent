@@ -13,7 +13,12 @@ from mss import MSS
 from PIL import Image
 
 from .game_state import classify_screen, is_death_screen, results_progress_ratio
-from .platform_control import PlatformBackend, Win32Platform, validate_game_path
+from .platform_control import (
+    DEFAULT_PRESS_DURATION,
+    PlatformBackend,
+    Win32Platform,
+    validate_game_path,
+)
 from .state_machine import ScreenState, StateMachine
 
 ENVIRONMENT_VERSION = "phase1-contract-v1"
@@ -87,6 +92,7 @@ class GeometryDashEnv(gym.Env):
         focus_on_reset: bool = True,
         focus_on_action: bool = True,
         max_action_rate: float | None = 30.0,
+        press_duration: float = DEFAULT_PRESS_DURATION,
         emergency_stop: EmergencyStop | None = None,
         platform_backend: PlatformBackend | None = None,
         capture_backend: CaptureBackend | None = None,
@@ -105,6 +111,10 @@ class GeometryDashEnv(gym.Env):
             )
         if max_action_rate is not None and max_action_rate <= 0:
             raise ValueError("max_action_rate must be positive when configured")
+        if not np.isfinite(press_duration) or not 0.0 < press_duration <= 1.0:
+            raise ValueError(
+                "press_duration must be finite and between 0 and 1 seconds"
+            )
         self.observation_size = observation_size
         self.fps = fps
         self.frame_interval = 1.0 / fps
@@ -117,6 +127,7 @@ class GeometryDashEnv(gym.Env):
         self.focus_on_reset = focus_on_reset
         self.focus_on_action = focus_on_action
         self.max_action_rate = max_action_rate
+        self.press_duration = press_duration
         self.emergency_stop = emergency_stop or EmergencyStop()
         self._screen: CaptureBackend = cast(CaptureBackend, capture_backend or MSS())
         self._platform = platform_backend or Win32Platform()
@@ -394,7 +405,11 @@ class GeometryDashEnv(gym.Env):
         self._check_emergency_stop()
         self._enforce_action_rate()
         if action == 1:
-            self._platform.send_jump(hwnd, ensure_focus=self.focus_on_action)
+            self._platform.send_jump(
+                hwnd,
+                ensure_focus=self.focus_on_action,
+                press_duration=self.press_duration,
+            )
         image: Image.Image | None = None
         terminated = False
         frames_elapsed = 0
