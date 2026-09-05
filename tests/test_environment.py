@@ -452,6 +452,23 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(env._bbox, (20, 30, 660, 510))
         self.assertFalse(env._episode_active)
 
+    def test_capture_failure_deactivates_episode(self) -> None:
+        """Focus and visibility failures cannot leave input enabled."""
+
+        env = self.make_env()
+        self.activate(env)
+        with (
+            patch.object(
+                self.platform,
+                "game_client_bbox",
+                side_effect=RuntimeError("Geometry Dash window is not foreground"),
+            ),
+            self.assertRaisesRegex(RuntimeError, "not foreground"),
+        ):
+            env._capture()
+
+        self.assertFalse(env._episode_active)
+
     def test_capture_reacquires_invalid_window_handle(self) -> None:
         """A restarted game is reacquired before the next capture."""
 

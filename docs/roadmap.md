@@ -285,7 +285,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Separate `ATTEMPT_INTRO` from `GAMEPLAY`; reset waits for the stability threshold and returns only after recording a `GAMEPLAY` transition.
 - [ ] P0 — Detect death close to collision or explicitly document terminal-detection delay.
 - [ ] P0 — Detect successful level completion separately from death.
-- [ ] P0 — Decide whether pause/menu/focus-loss states truncate, error, or recover; encode the result.
+- [x] VERIFIED — Decide that pause/menu/focus-loss and invalid capture states fail closed as controller errors; encode ADR 0006 and deactivate active episodes.
 - [x] VERIFIED — Attach `screen_state`, `previous_state`, `transition_reason`, and `detector_confidence` to reset/step diagnostic info.
 - [x] VERIFIED — Reject `step()` outside `GAMEPLAY` before rate limiting, input dispatch, or capture.
 - [x] VERIFIED — Allow reset input only from `DISCONNECTED`, `MAIN_MENU`, `RESULTS`, `LEVEL_COMPLETE`, or `ERROR`; active gameplay/transition states fail before clicking.

@@ -83,6 +83,12 @@ The results-screen retry uses calibrated normalized client coordinates
 `(0.29, 0.82)`. Both coordinates are validated as finite values in the
 inclusive `[0, 1]` range before any live input operation.
 
+Unexpected pause/menu, focus-loss, invalid-window, or invalid-client-geometry
+conditions fail closed as controller errors and deactivate the episode.
+The caller must restore a validated resettable game state before calling
+`reset()`; the controller never invents a gameplay observation or
+silently retries input.
+
 After a time-limit truncation, `step()` remains disabled until a reset has
 been accepted from a resettable game state. The live controller does not
 force-click an active gameplay screen merely because the Python time limit was
