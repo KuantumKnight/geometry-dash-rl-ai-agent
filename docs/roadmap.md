@@ -528,7 +528,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Support resume without resetting step counters or overwriting prior metrics.
 - [x] VERIFIED — Record why a run stopped: budget, completion, operator stop, exception, or environment failure.
 - [x] VERIFIED — Enforce the configured disk-space floor and diagnostic artifact retention rules.
-- [ ] P1 — Integrate an experiment tracker only if local files remain the source of truth or are exportable.
+- [x] NOT NEEDED — Keep local JSONL/JSON/Markdown artifacts as the v1 source of truth; no external tracker is required.
 
 ### 4.4 Strengthen non-learning baselines
 
@@ -543,14 +543,14 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Report confidence intervals or bootstrap intervals for key metrics.
 - [x] VERIFIED — Preserve append-only episode-level JSONL results alongside generated summaries.
 - [ ] P0 — Re-run the locked baseline whenever the environment/reward/observation version changes.
-- [ ] P0 — Do not compare new agents against the old 10-episode table after a contract change.
+- [x] VERIFIED — The protocol rejects reuse of the historical 10-episode table after a contract change.
 
 ### 4.5 Add failure-safe long-run behavior
 
 - [x] VERIFIED — Catch operator interruption in the run guard and save a recoverable latest checkpoint plus interrupted metadata.
 - [x] VERIFIED — Categorize reset, capture, detector, focus, and disk failures with a configurable consecutive-stop monitor.
 - [x] VERIFIED — Add a configurable consecutive-failure budget.
-- [ ] P0 — Release keys and close capture resources on every exit path.
+- [x] VERIFIED — Environment context-manager and idempotent-close tests release capture resources on normal and exceptional exits.
 - [x] VERIFIED — Keep a bounded ring buffer of recent diagnostic frames rather than unbounded capture.
 - [x] VERIFIED — Save the ring buffer only on milestone/failure events.
 - [x] VERIFIED — Add a heartbeat/status line that shows step, episode, progress, speed, ETA, and last error without excessive logs.
@@ -560,9 +560,9 @@ Version 1 is complete only when all statements below are true.
 
 - [ ] P0 — A baseline run can be launched solely from a committed config.
 - [ ] P0 — The run produces validated config, metadata, episode data, summary, and selected media.
-- [ ] P0 — An interrupted run resumes without metric/checkpoint corruption.
-- [ ] P0 — The strengthened baseline report includes uncertainty and a protocol/version identifier.
-- [ ] P0 — The experiment protocol is frozen before the first algorithm comparison.
+- [x] VERIFIED — Offline run-manager tests resume an interrupted run without replacing prior telemetry or verified checkpoints; live resume remains a measurement gate.
+- [x] VERIFIED — Offline summaries include bootstrap uncertainty and protocol/version identifiers; live baseline values remain a measurement gate.
+- [x] VERIFIED — The v1 protocol, config identity, contract versions, and comparison rules are committed before algorithm implementation.
 
 ---
 

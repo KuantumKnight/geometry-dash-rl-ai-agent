@@ -27,6 +27,6 @@ Each new experiment receives a stable ID and must link to:
 - raw episode data, generated summary, and any checkpoint;
 - representative media, checksums, and privacy/rights status.
 
-The first formal protocol remains an open Phase 4 task. Until it is accepted,
-new live measurements should be labeled exploratory rather than compared on a
-leaderboard.
+The formal protocol is frozen in `docs/experiment-protocol.md`; new live
+measurements should still be labeled exploratory until the reference setup and
+baseline evidence satisfy the remaining Phase 4 gates.

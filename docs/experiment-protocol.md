@@ -46,7 +46,12 @@ uv run python -m unittest tests.test_experiment tests.test_baselines -v
 uv run python tools/run_baseline.py --unattended-dry-run --output artifacts/runs
 ```
 
+Local JSONL/JSON/Markdown artifacts remain the source of truth for v1, so no
+external experiment tracker is required. Historical 10-episode baseline output
+is never reused for comparisons after a contract change; new comparisons must
+use the locked protocol and current contract versions.
+
 Live baseline episodes, confidence intervals, checkpoint selection evidence,
-and full launch/resume reproduction remain measurement gates. Geometry Dash
+selected media, and full launch/resume reproduction remain measurement gates. Geometry Dash
 capture/input scheduling is not fully seed-controlled, so exact live replay is
 not promised even when policy and library seeds match.
