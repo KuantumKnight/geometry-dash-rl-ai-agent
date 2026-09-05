@@ -19,13 +19,13 @@ from .platform_control import (
     Win32Platform,
     validate_game_path,
 )
+from .reward import REWARD_CONTRACT_VERSION, calculate_reward
 from .state_machine import ScreenState, StateMachine
 
 ENVIRONMENT_VERSION = "phase1-contract-v1"
 OBSERVATION_CONTRACT_VERSION = "observation-v1"
 OBSERVATION_LAYOUT = "HWC"
 ACTION_CONTRACT_VERSION = "action-v1"
-REWARD_CONTRACT_VERSION = "reward-provisional-v1"
 
 
 class CaptureBackend(Protocol):
@@ -447,14 +447,13 @@ class GeometryDashEnv(gym.Env):
         progress_ratio = results_progress_ratio(image) if terminated else None
         termination_reason = "results_screen" if terminated else None
         truncation_reason = "max_steps" if truncated else None
-        reward = (
-            (-1.0 + progress_ratio)
-            if terminated and progress_ratio is not None
-            else 0.0
+        reward_breakdown = calculate_reward(
+            "death" if terminated else "truncation" if truncated else "alive",
+            progress_ratio=progress_ratio,
         )
         return (
             self._observation(image),
-            reward,
+            reward_breakdown.total,
             terminated,
             truncated,
             {
@@ -485,6 +484,7 @@ class GeometryDashEnv(gym.Env):
                 "termination_reason": termination_reason,
                 "truncation_reason": truncation_reason,
                 "progress_ratio": progress_ratio,
+                "reward_components": reward_breakdown.as_dict(),
                 "capture_bbox": self._bbox,
             },
         )

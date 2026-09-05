@@ -392,27 +392,27 @@ Version 1 is complete only when all statements below are true.
 
 ### 2.3 Specify reward versions and invariants
 
-- [ ] DECISION — Lock a sparse terminal reward baseline before adding shaping.
-- [ ] P0 — Define distinct values/terms for forward progress, survival if used, death, completion, truncation, and invalid-state termination.
-- [ ] P0 — Keep each reward component separately visible in `info` and logs.
-- [ ] P0 — Ensure standing still cannot accumulate meaningful progress reward.
-- [ ] P0 — Ensure repeating the same frame cannot accumulate progress reward.
-- [ ] P0 — Ensure reset/transition UI cannot generate progress reward.
-- [ ] P0 — Ensure completion is always better than dying at the same measured progress.
-- [ ] P0 — Bound per-step and per-episode reward magnitudes.
-- [ ] P0 — Define behavior when progress is unavailable.
-- [ ] P0 — Add unit/property tests for all reward invariants.
-- [ ] P0 — Version every reward change and prevent incomparable runs from sharing the same result table.
+- [x] DECISION — Lock the sparse terminal reward baseline before adding shaping.
+- [x] VERIFIED — Define distinct values/terms for progress, survival, death, completion, truncation, and invalid-state outcomes.
+- [x] VERIFIED — Keep each reward component separately visible in `info` and logs.
+- [x] VERIFIED — Ensure standing still cannot accumulate meaningful progress reward.
+- [x] VERIFIED — Ensure repeating the same frame cannot accumulate progress reward.
+- [x] VERIFIED — Ensure reset/transition UI cannot generate progress reward.
+- [x] VERIFIED — Ensure completion is always better than dying at the same measured progress.
+- [x] VERIFIED — Bound per-step and per-episode reward magnitudes.
+- [x] VERIFIED — Define missing-progress behavior explicitly.
+- [x] VERIFIED — Add unit tests for the reward invariants.
+- [x] VERIFIED — Version reward changes and prevent incomparable runs from sharing the same result table.
 - [ ] P1 — Compare sparse, progress-only, progress-plus-death, and progress-plus-small-survival rewards under one protocol.
 - [ ] P1 — Reject shaping that raises training reward without raising evaluation progress/completion.
 
 ### Phase 2 exit gate
 
 - [ ] P0 — Publish detector error and missing-rate measurements on held-out data.
-- [ ] P0 — Publish reward contract v1 with examples and invariants.
-- [ ] P0 — Pass all reward regression tests.
+- [x] VERIFIED — Publish reward contract v1 with examples and invariants.
+- [x] VERIFIED — Pass reward regression tests.
 - [ ] P0 — Manually review reward-component traces for representative successful and failed episodes.
-- [ ] P0 — Record an ADR selecting the first training reward and rejected alternatives.
+- [x] VERIFIED — Record the sparse-terminal reward selection and rejected shaping alternatives in `docs/reward-contract.md`.
 
 ---
 

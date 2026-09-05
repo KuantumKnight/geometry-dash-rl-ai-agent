@@ -265,6 +265,8 @@ class EnvironmentTests(unittest.TestCase):
         self.assertFalse(terminated)
         self.assertTrue(truncated)
         self.assertEqual(info["decision_step"], 1)
+        reward_components = cast(dict[str, float], info["reward_components"])
+        self.assertEqual(reward_components["total"], 0.0)
         self.assertFalse(env._episode_active)
 
     def test_step_after_truncation_is_rejected(self) -> None:
@@ -300,6 +302,9 @@ class EnvironmentTests(unittest.TestCase):
         self.assertFalse(truncated)
         self.assertEqual(info["termination_reason"], "results_screen")
         self.assertIsNone(info["truncation_reason"])
+        reward_components = cast(dict[str, float], info["reward_components"])
+        self.assertEqual(reward_components["death"], -1.0)
+        self.assertEqual(reward_components["progress"], 0.5)
         with self.assertRaisesRegex(RuntimeError, "Call reset"):
             env.step(0)
 
