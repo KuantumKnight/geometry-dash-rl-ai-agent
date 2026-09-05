@@ -272,7 +272,7 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Add the thread-safe `EmergencyStop` latch and document the host binding (`Ctrl+Shift+F12`) required for live sessions.
 - [x] VERIFIED — Add configurable `max_action_rate` throttling so a control bug cannot flood input indefinitely.
 - [x] VERIFIED — Restore the user's cursor in a `finally` block after normalized reset clicks; cursor movement remains isolated to the reset operation.
-- [ ] P0 — Prefer a reset input that does not depend on hard-coded screen coordinates; otherwise calibrate and validate normalized coordinates.
+- [x] VERIFIED — Use calibrated normalized reset coordinates and validate them before any live input operation.
 - [x] VERIFIED — Make focus behavior explicit through `focus_on_reset` and `focus_on_action`; callers can disable focus stealing while the safe default remains enabled.
 - [ ] P1 — Measure whether the input API drops presses at different game/window states.
 - [ ] P1 — Add press-duration configuration and validate a short press across supported machines.

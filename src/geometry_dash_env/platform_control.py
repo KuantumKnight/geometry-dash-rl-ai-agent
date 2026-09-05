@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ctypes
+import math
 import os
 import time
 from ctypes import wintypes
@@ -340,6 +341,10 @@ def click_client(
 ) -> None:
     """Click a normalized point inside the focused game client area."""
 
+    if not math.isfinite(relative_x) or not 0.0 <= relative_x <= 1.0:
+        raise ValueError("relative_x must be a finite value between 0 and 1")
+    if not math.isfinite(relative_y) or not 0.0 <= relative_y <= 1.0:
+        raise ValueError("relative_y must be a finite value between 0 and 1")
     user32, _ = _load_win32()
     left, top, right, bottom = game_client_bbox(hwnd)
     x = left + round((right - left) * relative_x)

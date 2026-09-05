@@ -109,6 +109,28 @@ class PlatformConfigTests(unittest.TestCase):
             [call(29, 82), call(11, 22)],
         )
 
+    def test_reset_click_rejects_invalid_normalized_coordinates(self) -> None:
+        """Calibration errors fail before any live Win32 operation."""
+
+        for relative_x, relative_y in (
+            (-0.01, 0.82),
+            (1.01, 0.82),
+            (0.29, float("nan")),
+            (0.29, float("inf")),
+        ):
+            with (
+                self.subTest(relative_x=relative_x, relative_y=relative_y),
+                patch("geometry_dash_env.platform_control._load_win32") as load_win32,
+                self.assertRaisesRegex(ValueError, "between 0 and 1"),
+            ):
+                click_client(
+                    cast(Any, 123),
+                    relative_x=relative_x,
+                    relative_y=relative_y,
+                )
+
+            load_win32.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
