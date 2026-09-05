@@ -533,13 +533,13 @@ Version 1 is complete only when all statements below are true.
 ### 4.4 Strengthen non-learning baselines
 
 - [x] HISTORICAL — Always-no-op, random-jump, and periodic-jump policies have initial 10-episode measurements.
-- [ ] P0 — Move baseline policies into importable, unit-tested modules.
-- [ ] P0 — Add tests for action sequences and seed behavior.
+- [x] VERIFIED — Move baseline policies into importable, unit-tested modules in `geometry_dash_env.baselines`.
+- [x] VERIFIED — Test baseline action sequences and reproducible seed behavior.
 - [ ] P0 — Use the same locked environment/reward/observation contract as learning agents.
 - [ ] P0 — Run enough episodes to report stable estimates and uncertainty.
 - [ ] P0 — Evaluate multiple random seeds rather than one random action stream.
 - [ ] P0 — Sweep periodic intervals on validation episodes only, then lock the best periodic baseline.
-- [ ] P0 — Add a simple observation-based heuristic baseline if it can be specified without learning.
+- [x] VERIFIED — Add a deterministic brightness-based observation heuristic baseline without learning.
 - [ ] P0 — Report confidence intervals or bootstrap intervals for key metrics.
 - [ ] P0 — Preserve episode-level results, not only aggregate output copied into Markdown.
 - [ ] P0 — Re-run the locked baseline whenever the environment/reward/observation version changes.
