@@ -8,6 +8,7 @@ import statistics
 import sys
 from collections import defaultdict
 from datetime import datetime
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -116,7 +117,7 @@ def transition_latencies(
     transition_count = 0
     for episode_id, truth in ground_truth_episodes.items():
         predictions = prediction_episodes.get(episode_id, [])
-        for previous, current in zip(truth, truth[1:]):
+        for previous, current in pairwise(truth):
             previous_state = previous["state"]
             current_state = current["state"]
             if previous_state == current_state:
@@ -143,7 +144,7 @@ def evaluate(
 ) -> dict[str, Any]:
     """Compute confusion, per-state metrics, and transition latency."""
 
-    truth_index, truth_episodes = validate_records(ground_truth, label="ground truth")
+    _, truth_episodes = validate_records(ground_truth, label="ground truth")
     prediction_index, prediction_episodes = validate_records(
         predictions,
         label="prediction",
@@ -163,8 +164,7 @@ def evaluate(
             + ", ".join(sorted(extra_predictions))
         )
     matrix = {
-        truth_state: {predicted: 0 for predicted in STATES}
-        for truth_state in STATES
+        truth_state: {predicted: 0 for predicted in STATES} for truth_state in STATES
     }
     for truth_record in selected_truth:
         truth_state = truth_record["state"]
@@ -176,12 +176,8 @@ def evaluate(
     correct = sum(matrix[state][state] for state in STATES)
     for state in STATES:
         true_positive = matrix[state][state]
-        false_positive = sum(
-            matrix[other][state] for other in STATES if other != state
-        )
-        false_negative = sum(
-            matrix[state][other] for other in STATES if other != state
-        )
+        false_positive = sum(matrix[other][state] for other in STATES if other != state)
+        false_negative = sum(matrix[state][other] for other in STATES if other != state)
         precision = (
             true_positive / (true_positive + false_positive)
             if true_positive + false_positive
@@ -193,9 +189,7 @@ def evaluate(
             else 0.0
         )
         f1 = (
-            2 * precision * recall / (precision + recall)
-            if precision + recall
-            else 0.0
+            2 * precision * recall / (precision + recall) if precision + recall else 0.0
         )
         per_state[state] = {
             "support": true_positive + false_negative,
