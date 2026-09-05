@@ -305,7 +305,7 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Keep detector-development and held-out test episodes separate.
 - [x] VERIFIED — Version annotation records and collection metadata through the schema and manifest protocol.
 - [x] VERIFIED — Decide that visual samples remain local unless privacy/rights clearance is recorded; publish only schema, scripts, aggregate metrics, and redacted metadata otherwise.
-- [ ] P0 — Add an offline evaluation CLI that emits confusion matrix, per-state precision/recall/F1, and transition latency.
+- [x] VERIFIED — Add an offline evaluation CLI that emits confusion matrix, per-state precision/recall/F1, and transition latency.
 - [ ] P0 — Set minimum acceptable recall for terminal states and maximum false-terminal rate before live qualification.
 - [ ] P0 — Add regression fixtures for every detector bug that is fixed.
 - [ ] P1 — Have a second labeling pass on ambiguous transition frames and record agreement.

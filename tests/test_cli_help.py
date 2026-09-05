@@ -14,6 +14,7 @@ PUBLIC_TOOLS = (
     "benchmark_detector_offline.py",
     "benchmark_env.py",
     "capture_action.py",
+    "evaluate_detector.py",
     "profile_env_step.py",
     "record_frames.py",
     "reset_episode.py",

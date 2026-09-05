@@ -23,9 +23,20 @@ uv run coverage run -m unittest discover -s tests -v
 uv run coverage report
 uv run python tools\scan_episode.py --help
 uv run python tools\benchmark_detector_offline.py --help
+uv run python tools\evaluate_detector.py --help
 ```
 
 These commands do not launch Geometry Dash or send desktop input. The default test discovery contains only offline contract tests.
+
+The detector evaluator consumes ground-truth annotation JSONL plus prediction
+JSONL with matching `frame_id`, `episode_id`, `timestamp_utc`, and
+`state` fields. It emits JSON with a confusion matrix, per-state
+precision/recall/F1, and transition latency. Example:
+
+uv run python tools\evaluate_detector.py --ground-truth path\to\ground-truth.jsonl --predictions path\to\predictions.jsonl --split held_out --output artifacts\detector-evaluation.json
+
+Predictions must cover exactly the selected ground-truth frame IDs. This
+prevents silent omission of difficult samples from the reported metrics.
 
 ## Live smoke/benchmark commands
 
