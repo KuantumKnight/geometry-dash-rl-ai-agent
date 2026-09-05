@@ -549,11 +549,11 @@ Version 1 is complete only when all statements below are true.
 
 - [ ] P0 — Catch interruption and save a recoverable checkpoint/metadata state.
 - [ ] P0 — Stop safely on repeated reset, capture, detector, focus, or disk failures.
-- [ ] P0 — Add a configurable consecutive-failure budget.
+- [x] VERIFIED — Add a configurable consecutive-failure budget.
 - [ ] P0 — Release keys and close capture resources on every exit path.
-- [ ] P0 — Keep a bounded ring buffer of recent diagnostic frames rather than unbounded capture.
-- [ ] P0 — Save the ring buffer only on milestone/failure events.
-- [ ] P0 — Add a heartbeat/status line that shows step, episode, progress, speed, ETA, and last error without excessive logs.
+- [x] VERIFIED — Keep a bounded ring buffer of recent diagnostic frames rather than unbounded capture.
+- [x] VERIFIED — Save the ring buffer only on milestone/failure events.
+- [x] VERIFIED — Add a heartbeat/status line that shows step, episode, progress, speed, ETA, and last error without excessive logs.
 - [ ] P1 — Add an unattended dry run long enough to expose file-handle, memory, and log-growth issues.
 
 ### Phase 4 exit gate

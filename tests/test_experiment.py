@@ -11,8 +11,11 @@ from unittest.mock import patch
 
 from geometry_dash_env.experiment import (
     EXPERIMENT_PROTOCOL_VERSION,
+    ConsecutiveFailureBudget,
+    DiagnosticRingBuffer,
     RunManager,
     config_hash,
+    heartbeat_line,
     load_config,
     resolve_config,
 )
@@ -30,8 +33,12 @@ class ExperimentInfrastructureTests(unittest.TestCase):
 
     def test_committed_baseline_config_is_loadable(self) -> None:
         config = load_config(Path(__file__).parents[1] / "configs" / "baseline.json")
-        self.assertEqual(cast(dict[str, object], config["algorithm"])["name"], "baseline")
-        self.assertEqual(cast(dict[str, object], config["evaluation"])["split"], "held_out")
+        self.assertEqual(
+            cast(dict[str, object], config["algorithm"])["name"], "baseline"
+        )
+        self.assertEqual(
+            cast(dict[str, object], config["evaluation"])["split"], "held_out"
+        )
 
     def test_unknown_sections_and_keys_are_rejected(self) -> None:
         with self.assertRaises(ValueError):
@@ -42,7 +49,10 @@ class ExperimentInfrastructureTests(unittest.TestCase):
     def test_run_creation_writes_identity_before_records(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             manager = RunManager.create(
-                Path(directory), {"system": {"min_free_bytes": 1, "exploratory": True}}, command="test", seed=7
+                Path(directory),
+                {"system": {"min_free_bytes": 1, "exploratory": True}},
+                command="test",
+                seed=7,
             )
             self.assertEqual(manager.state, "created")
             metadata = json.loads((manager.run_dir / "metadata.json").read_text())
@@ -52,13 +62,19 @@ class ExperimentInfrastructureTests(unittest.TestCase):
             manager.set_state("running")
             self.assertEqual(manager.state, "running")
 
-    def test_raw_records_checkpoint_summary_and_resume_survive_interruption(self) -> None:
+    def test_raw_records_checkpoint_summary_and_resume_survive_interruption(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            manager = RunManager.create(Path(directory), {"system": {"min_free_bytes": 1, "exploratory": True}})
+            manager = RunManager.create(
+                Path(directory), {"system": {"min_free_bytes": 1, "exploratory": True}}
+            )
             manager.set_state("running")
             manager.record_step({"step": 1, "reward_components": {"total": 0.0}})
             manager.record_episode({"episode": 1, "return": 0.0, "progress": 0.0})
-            checkpoint = manager.save_checkpoint("latest", {"step": 1, "policy": {"seed": 4}})
+            checkpoint = manager.save_checkpoint(
+                "latest", {"step": 1, "policy": {"seed": 4}}
+            )
             self.assertTrue(checkpoint.exists())
             manager.write_summary({"episodes": 1, "completion_rate": 0.0})
             manager.set_state("interrupted", reason="operator stop")
@@ -67,18 +83,53 @@ class ExperimentInfrastructureTests(unittest.TestCase):
             resumed.record_step({"step": 2, "reward_components": {"total": 0.0}})
             telemetry = (manager.run_dir / "telemetry.jsonl").read_text().splitlines()
             self.assertEqual(len(telemetry), 2)
-            self.assertIn("operator stop", (manager.run_dir / "metadata.json").read_text())
+            self.assertIn(
+                "operator stop", (manager.run_dir / "metadata.json").read_text()
+            )
             self.assertTrue((manager.run_dir / "summary.json").exists())
             self.assertTrue((manager.run_dir / "report.md").exists())
 
     def test_official_run_rejects_dirty_tree(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch("geometry_dash_env.experiment._git_dirty", return_value=True),
+            self.assertRaisesRegex(RuntimeError, "clean git tree"),
+        ):
+            RunManager.create(Path(directory))
+
+    def test_failure_budget_resets_and_exhausts(self) -> None:
+        budget = ConsecutiveFailureBudget(limit=2)
+        self.assertFalse(budget.record_failure())
+        self.assertTrue(budget.record_failure())
+        budget.record_success()
+        self.assertEqual(budget.consecutive, 0)
+
+    def test_diagnostic_ring_buffer_is_bounded_and_event_saved(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            with patch("geometry_dash_env.experiment._git_dirty", return_value=True):
-                with self.assertRaisesRegex(RuntimeError, "clean git tree"):
-                    RunManager.create(Path(directory))
+            buffer = DiagnosticRingBuffer(capacity=2)
+            buffer.add({"step": 1})
+            buffer.add({"step": 2})
+            buffer.add({"step": 3})
+            self.assertEqual(buffer.records(), [{"step": 2}, {"step": 3}])
+            path = Path(directory) / "diagnostics.json"
+            buffer.save_event(path)
+            self.assertEqual(json.loads(path.read_text()), buffer.records())
+
+    def test_heartbeat_contains_operational_fields(self) -> None:
+        line = heartbeat_line(
+            step=4, episode=2, progress=0.5, speed=1.25, eta=8.0, last_error=None
+        )
+        self.assertIn("step=4", line)
+        self.assertIn("episode=2", line)
+        self.assertIn("progress=0.500", line)
+        self.assertIn("speed=1.25/s", line)
+        self.assertIn("eta=8.0s", line)
+
     def test_only_interrupted_runs_can_resume(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            manager = RunManager.create(Path(directory), {"system": {"min_free_bytes": 1, "exploratory": True}})
+            manager = RunManager.create(
+                Path(directory), {"system": {"min_free_bytes": 1, "exploratory": True}}
+            )
             with self.assertRaises(ValueError):
                 RunManager.resume(manager.run_dir)
 

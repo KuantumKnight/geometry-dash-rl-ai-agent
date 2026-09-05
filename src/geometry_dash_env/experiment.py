@@ -10,15 +10,19 @@ import shutil
 import subprocess
 import sys
 import uuid
+from collections import deque
+from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
+from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any, Literal, Mapping, cast
+from pathlib import Path
+from typing import Literal, cast
 
 EXPERIMENT_PROTOCOL_VERSION = "experiment-protocol-v1"
 RUN_METADATA_VERSION = "run-metadata-v1"
-RunState = Literal["created", "running", "interrupted", "failed", "completed", "evaluated"]
+RunState = Literal[
+    "created", "running", "interrupted", "failed", "completed", "evaluated"
+]
 
 _CONFIG_KEYS: dict[str, set[str]] = {
     "environment": {"observation_size", "frame_skip", "frame_stack", "max_steps"},
@@ -32,7 +36,12 @@ _CONFIG_KEYS: dict[str, set[str]] = {
 }
 
 DEFAULT_CONFIG: dict[str, dict[str, object]] = {
-    "environment": {"observation_size": [160, 90], "frame_skip": 4, "frame_stack": 1, "max_steps": 900},
+    "environment": {
+        "observation_size": [160, 90],
+        "frame_skip": 4,
+        "frame_stack": 1,
+        "max_steps": 900,
+    },
     "observation": {"mode": "rgb", "crop": None, "size": [160, 90]},
     "reward": {"version": "reward-sparse-terminal-v1"},
     "algorithm": {"name": "baseline"},
@@ -44,11 +53,13 @@ DEFAULT_CONFIG: dict[str, dict[str, object]] = {
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _canonical_json(value: object) -> bytes:
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode()
 
 
 def config_hash(config: Mapping[str, object]) -> str:
@@ -76,7 +87,9 @@ def validate_config(config: Mapping[str, object]) -> None:
             raise ValueError(f"unknown keys in {section}: {sorted(unknown)}")
 
 
-def _deep_merge(base: Mapping[str, object], updates: Mapping[str, object]) -> dict[str, object]:
+def _deep_merge(
+    base: Mapping[str, object], updates: Mapping[str, object]
+) -> dict[str, object]:
     merged: dict[str, object] = dict(base)
     for key, value in updates.items():
         original = merged.get(key)
@@ -122,6 +135,8 @@ def _git_value(args: list[str], fallback: str) -> str:
 
 def _git_dirty() -> bool:
     return bool(_git_value(["git", "status", "--porcelain"], "unavailable"))
+
+
 def _package_versions() -> dict[str, str]:
     """Return versions for packages that define the run execution surface."""
 
@@ -133,6 +148,76 @@ def _package_versions() -> dict[str, str]:
         except PackageNotFoundError:
             versions[package] = "unavailable"
     return versions
+
+
+@dataclass
+class ConsecutiveFailureBudget:
+    """Stop a run after a configured number of consecutive failures."""
+
+    limit: int = 3
+    consecutive: int = 0
+
+    def __post_init__(self) -> None:
+        if self.limit <= 0:
+            raise ValueError("failure limit must be positive")
+
+    def record_success(self) -> None:
+        """Reset the consecutive failure count after a successful operation."""
+
+        self.consecutive = 0
+
+    def record_failure(self) -> bool:
+        """Record one failure and return whether the budget is exhausted."""
+
+        self.consecutive += 1
+        return self.consecutive >= self.limit
+
+
+@dataclass
+class DiagnosticRingBuffer:
+    """Bound recent diagnostic records and persist them only on an event."""
+
+    capacity: int = 32
+
+    def __post_init__(self) -> None:
+        if self.capacity <= 0:
+            raise ValueError("diagnostic capacity must be positive")
+        self._records: deque[dict[str, object]] = deque(maxlen=self.capacity)
+
+    def add(self, record: Mapping[str, object]) -> None:
+        """Keep one recent diagnostic record."""
+
+        self._records.append(dict(record))
+
+    def records(self) -> list[dict[str, object]]:
+        """Return a snapshot of the bounded records."""
+
+        return list(self._records)
+
+    def save_event(self, path: Path) -> None:
+        """Persist the current snapshot for a milestone or failure event."""
+
+        _atomic_write_json(path, self.records())
+
+
+def heartbeat_line(
+    *,
+    step: int,
+    episode: int,
+    progress: float | None,
+    speed: float,
+    eta: float | None,
+    last_error: str | None,
+) -> str:
+    """Format one compact operational status line."""
+
+    progress_text = "n/a" if progress is None else f"{progress:.3f}"
+    eta_text = "n/a" if eta is None else f"{eta:.1f}s"
+    error_text = "none" if last_error is None else last_error
+    return (
+        f"step={step} episode={episode} progress={progress_text} "
+        f"speed={speed:.2f}/s eta={eta_text} last_error={error_text}"
+    )
 
 
 @dataclass
@@ -158,7 +243,7 @@ class RunManager:
         system_config = cast(Mapping[str, object], resolved["system"])
         if _git_dirty() and not bool(system_config["exploratory"]):
             raise RuntimeError("official comparison runs require a clean git tree")
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         run_id = f"{timestamp}-{uuid.uuid4().hex[:8]}"
         run_dir = output_root / run_id
         run_dir.mkdir(parents=True, exist_ok=False)
@@ -263,7 +348,9 @@ class RunManager:
     def _append_jsonl(self, name: str, row: Mapping[str, object]) -> None:
         self.ensure_disk_space()
         with (self.run_dir / name).open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(dict(row), sort_keys=True, ensure_ascii=True) + "\n")
+            handle.write(
+                json.dumps(dict(row), sort_keys=True, ensure_ascii=True) + "\n"
+            )
 
     def save_checkpoint(self, name: str, payload: Mapping[str, object]) -> Path:
         """Atomically save and immediately reload a checkpoint payload."""
@@ -277,7 +364,7 @@ class RunManager:
         with path.open(encoding="utf-8") as handle:
             loaded = json.load(handle)
         if loaded != checkpoint:
-            raise IOError("checkpoint verification failed after save")
+            raise OSError("checkpoint verification failed after save")
         return path
 
     def write_summary(self, metrics: Mapping[str, object]) -> None:
@@ -291,7 +378,14 @@ class RunManager:
             "metrics": dict(metrics),
         }
         _atomic_write_json(self.run_dir / "summary.json", summary)
-        lines = [f"# Run {self.run_id}", "", f"Protocol: `{EXPERIMENT_PROTOCOL_VERSION}`", ""]
+        lines = [
+            f"# Run {self.run_id}",
+            "",
+            f"Protocol: `{EXPERIMENT_PROTOCOL_VERSION}`",
+            "",
+        ]
         for key, value in metrics.items():
             lines.append(f"- {key}: {value}")
-        (self.run_dir / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        (self.run_dir / "report.md").write_text(
+            "\n".join(lines) + "\n", encoding="utf-8"
+        )
