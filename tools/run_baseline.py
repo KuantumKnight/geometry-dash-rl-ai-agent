@@ -15,7 +15,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=Path("configs/baseline.json"))
     parser.add_argument("--output", type=Path, default=Path("artifacts/runs"))
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--dry-run", action="store_true", help="validate config without live interaction")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="validate config without live interaction",
+    )
     return parser.parse_args()
 
 
@@ -25,7 +29,10 @@ def main() -> None:
     args = parse_args()
     config = load_config(args.config)
     if not args.dry_run:
-        raise SystemExit("live baseline execution is gated until the reference setup is qualified; use --dry-run")
+        raise SystemExit(
+            "live baseline execution is gated until the reference setup is qualified; "
+            "use --dry-run"
+        )
     print(f"config={args.config}")
     print(f"output={args.output}")
     print(f"seed={args.seed}")

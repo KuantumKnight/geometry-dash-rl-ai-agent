@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from statistics import median
-from typing import Mapping, cast
+from typing import cast
 
 
 @dataclass
@@ -32,7 +33,9 @@ class RollingMetrics:
 
         return {
             "episodes": len(self.returns),
-            "mean_return": sum(self.returns) / len(self.returns) if self.returns else None,
+            "mean_return": sum(self.returns) / len(self.returns)
+            if self.returns
+            else None,
             "median_progress": median(self.progresses) if self.progresses else None,
             "best_progress": max(self.progresses) if self.progresses else None,
         }
@@ -48,20 +51,28 @@ def bootstrap_interval(
     if any(not math.isfinite(value) for value in values):
         raise ValueError("values must be finite")
     rng = random.Random(seed)
-    means = [sum(rng.choices(values, k=len(values))) / len(values) for _ in range(samples)]
+    means = [
+        sum(rng.choices(values, k=len(values))) / len(values) for _ in range(samples)
+    ]
     means.sort()
     lower = int((1 - confidence) / 2 * samples)
     upper = int((1 + confidence) / 2 * samples)
     return means[lower], means[min(samples - 1, upper)]
 
 
-def summarize_episodes(rows: list[Mapping[str, object]], *, seed: int = 0) -> dict[str, object]:
+def summarize_episodes(
+    rows: list[Mapping[str, object]], *, seed: int = 0
+) -> dict[str, object]:
     """Aggregate episode rows and include uncertainty for progress."""
 
     if not rows:
         raise ValueError("at least one episode row is required")
-    returns = [float(cast(float, row["return"])) for row in rows]
-    progresses = [float(cast(float, row["progress"])) for row in rows if row.get("progress") is not None]
+
+    progresses = [
+        float(cast(float, row["progress"]))
+        for row in rows
+        if row.get("progress") is not None
+    ]
     completions = sum(row.get("outcome") == "completion" for row in rows)
     deaths = sum(row.get("outcome") == "death" for row in rows)
     truncations = sum(row.get("outcome") == "truncation" for row in rows)
@@ -70,11 +81,18 @@ def summarize_episodes(rows: list[Mapping[str, object]], *, seed: int = 0) -> di
         "completion_rate": completions / len(rows),
         "median_progress": median(progresses) if progresses else None,
         "best_progress": max(progresses) if progresses else None,
-        "mean_episode_length": sum(float(cast(float, row["length"])) for row in rows) / len(rows),
+        "mean_episode_length": sum(float(cast(float, row["length"])) for row in rows)
+        / len(rows),
         "deaths": deaths,
         "truncations": truncations,
-        "reset_failures": sum(float(cast(float, row.get("reset_failures", 0))) for row in rows),
-        "environment_steps": sum(float(cast(float, row.get("length", 0))) for row in rows),
-        "progress_mean_ci95": bootstrap_interval(progresses, seed=seed) if progresses else None,
+        "reset_failures": sum(
+            float(cast(float, row.get("reset_failures", 0))) for row in rows
+        ),
+        "environment_steps": sum(
+            float(cast(float, row.get("length", 0))) for row in rows
+        ),
+        "progress_mean_ci95": bootstrap_interval(progresses, seed=seed)
+        if progresses
+        else None,
     }
     return result

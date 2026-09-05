@@ -5,7 +5,11 @@ from __future__ import annotations
 import unittest
 from typing import cast
 
-from geometry_dash_env.metrics import RollingMetrics, bootstrap_interval, summarize_episodes
+from geometry_dash_env.metrics import (
+    RollingMetrics,
+    bootstrap_interval,
+    summarize_episodes,
+)
 
 
 class MetricsTests(unittest.TestCase):
