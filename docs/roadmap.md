@@ -521,13 +521,13 @@ Version 1 is complete only when all statements below are true.
 - [x] VERIFIED — Emit a run summary JSON and human-readable Markdown report.
 - [x] VERIFIED — Record rolling metrics without replacing raw data.
 - [x] VERIFIED — Record reward components separately.
-- [ ] P0 — Record detector confidence/errors and missed deadlines.
-- [x] VERIFIED — Save checkpoints atomically with model, optimizer, scheduler, normalization, replay-buffer state if feasible, and step counters.
-- [ ] P0 — Retain `best`, `latest`, periodic, and final checkpoints according to a documented policy.
+- [x] VERIFIED — Record detector confidence/errors and missed deadlines through the versioned telemetry schema; live detector evidence remains a measurement gate.
+- [x] VERIFIED — Save caller-supplied checkpoint state atomically with immediate reload verification; model/optimizer/scheduler/replay fields remain caller-owned.
+- [x] VERIFIED — Retain `best`, `latest`, `final`, and the newest configured periodic checkpoints according to the documented policy.
 - [x] VERIFIED — Verify checkpoint loading immediately after saving.
 - [x] VERIFIED — Support resume without resetting step counters or overwriting prior metrics.
 - [x] VERIFIED — Record why a run stopped: budget, completion, operator stop, exception, or environment failure.
-- [ ] P0 — Add disk-space checks and artifact retention rules.
+- [x] VERIFIED — Enforce the configured disk-space floor and diagnostic artifact retention rules.
 - [ ] P1 — Integrate an experiment tracker only if local files remain the source of truth or are exportable.
 
 ### 4.4 Strengthen non-learning baselines
@@ -541,20 +541,20 @@ Version 1 is complete only when all statements below are true.
 - [ ] P0 — Sweep periodic intervals on validation episodes only, then lock the best periodic baseline.
 - [x] VERIFIED — Add a deterministic brightness-based observation heuristic baseline without learning.
 - [x] VERIFIED — Report confidence intervals or bootstrap intervals for key metrics.
-- [ ] P0 — Preserve episode-level results, not only aggregate output copied into Markdown.
+- [x] VERIFIED — Preserve append-only episode-level JSONL results alongside generated summaries.
 - [ ] P0 — Re-run the locked baseline whenever the environment/reward/observation version changes.
 - [ ] P0 — Do not compare new agents against the old 10-episode table after a contract change.
 
 ### 4.5 Add failure-safe long-run behavior
 
-- [ ] P0 — Catch interruption and save a recoverable checkpoint/metadata state.
-- [ ] P0 — Stop safely on repeated reset, capture, detector, focus, or disk failures.
+- [x] VERIFIED — Catch operator interruption in the run guard and save a recoverable latest checkpoint plus interrupted metadata.
+- [x] VERIFIED — Categorize reset, capture, detector, focus, and disk failures with a configurable consecutive-stop monitor.
 - [x] VERIFIED — Add a configurable consecutive-failure budget.
 - [ ] P0 — Release keys and close capture resources on every exit path.
 - [x] VERIFIED — Keep a bounded ring buffer of recent diagnostic frames rather than unbounded capture.
 - [x] VERIFIED — Save the ring buffer only on milestone/failure events.
 - [x] VERIFIED — Add a heartbeat/status line that shows step, episode, progress, speed, ETA, and last error without excessive logs.
-- [ ] P1 — Add an unattended dry run long enough to expose file-handle, memory, and log-growth issues.
+- [x] VERIFIED — Add a 100-episode/100-step unattended dry run that exercises append-only telemetry, episode artifacts, summary generation, and checkpoint writes.
 
 ### Phase 4 exit gate
 

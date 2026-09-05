@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import platform
 import shutil
@@ -11,7 +12,8 @@ import subprocess
 import sys
 import uuid
 from collections import deque
-from collections.abc import Mapping
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError, version
@@ -31,7 +33,12 @@ _CONFIG_KEYS: dict[str, set[str]] = {
     "algorithm": {"name"},
     "training": {"budget_steps", "budget_seconds", "seeds"},
     "evaluation": {"episodes", "seeds", "split"},
-    "recording": {"telemetry_interval", "save_frames"},
+    "recording": {
+        "telemetry_interval",
+        "save_frames",
+        "checkpoint_retention",
+        "artifact_retention",
+    },
     "system": {"min_free_bytes", "exploratory"},
 }
 
@@ -47,7 +54,12 @@ DEFAULT_CONFIG: dict[str, dict[str, object]] = {
     "algorithm": {"name": "baseline"},
     "training": {"budget_steps": 0, "budget_seconds": 0, "seeds": [42]},
     "evaluation": {"episodes": 10, "seeds": [42], "split": "held_out"},
-    "recording": {"telemetry_interval": 1, "save_frames": False},
+    "recording": {
+        "telemetry_interval": 1,
+        "save_frames": False,
+        "checkpoint_retention": {"periodic": 3},
+        "artifact_retention": {"diagnostics": 10},
+    },
     "system": {"min_free_bytes": 100_000_000, "exploratory": False},
 }
 
@@ -173,6 +185,46 @@ class ConsecutiveFailureBudget:
         return self.consecutive >= self.limit
 
 
+FailureKind = Literal["reset", "capture", "detector", "focus", "disk"]
+_FAILURE_KINDS = frozenset({"reset", "capture", "detector", "focus", "disk"})
+
+
+@dataclass
+class RunFailureMonitor:
+    """Classify operational failures and stop after consecutive failures."""
+
+    limit: int = 3
+    _budget: ConsecutiveFailureBudget | None = None
+    last_kind: FailureKind | None = None
+    last_error: str | None = None
+
+    def __post_init__(self) -> None:
+        self._budget = ConsecutiveFailureBudget(self.limit)
+
+    @property
+    def budget(self) -> ConsecutiveFailureBudget:
+        """Return the initialized consecutive-failure budget."""
+
+        assert self._budget is not None
+        return self._budget
+
+    def record_success(self) -> None:
+        """Reset the failure budget after any successful operation."""
+
+        self.budget.record_success()
+
+    def record_failure(self, kind: FailureKind, error: str) -> bool:
+        """Record a supported operational failure and return whether to stop."""
+
+        if kind not in _FAILURE_KINDS:
+            raise ValueError(f"unsupported failure kind: {kind}")
+        if not error:
+            raise ValueError("failure error must not be empty")
+        self.last_kind = kind
+        self.last_error = error
+        return self.budget.record_failure()
+
+
 @dataclass
 class DiagnosticRingBuffer:
     """Bound recent diagnostic records and persist them only on an event."""
@@ -218,6 +270,40 @@ def heartbeat_line(
         f"step={step} episode={episode} progress={progress_text} "
         f"speed={speed:.2f}/s eta={eta_text} last_error={error_text}"
     )
+
+
+def detector_telemetry(
+    *,
+    state: str,
+    confidence: float | None,
+    errors: Sequence[str] = (),
+    missed_deadline: bool = False,
+    deadline_lateness_seconds: float | None = None,
+) -> dict[str, object]:
+    """Build the stable per-step detector and deadline telemetry fields."""
+
+    if not state:
+        raise ValueError("detector state must not be empty")
+    if confidence is not None and (
+        not math.isfinite(confidence) or not 0.0 <= confidence <= 1.0
+    ):
+        raise ValueError("detector confidence must be between 0 and 1")
+    if not isinstance(missed_deadline, bool):
+        raise ValueError("missed_deadline must be a boolean")
+    if deadline_lateness_seconds is not None and (
+        not math.isfinite(deadline_lateness_seconds) or deadline_lateness_seconds < 0.0
+    ):
+        raise ValueError("deadline lateness must be finite and non-negative")
+    normalized_errors = list(errors)
+    if any(not isinstance(error, str) or not error for error in normalized_errors):
+        raise ValueError("detector errors must be non-empty strings")
+    return {
+        "detector_state": state,
+        "detector_confidence": confidence,
+        "detector_errors": normalized_errors,
+        "missed_deadline": missed_deadline,
+        "deadline_lateness_seconds": deadline_lateness_seconds,
+    }
 
 
 @dataclass
@@ -325,6 +411,20 @@ class RunManager:
             self.metadata["stop_reason"] = reason
         self._write_metadata()
 
+    @contextmanager
+    def interruption_guard(
+        self, checkpoint: Callable[[], Mapping[str, object]] | None = None
+    ) -> Iterator[RunManager]:
+        """Persist recovery state when an operator interrupts a run."""
+
+        try:
+            yield self
+        except KeyboardInterrupt:
+            if checkpoint is not None:
+                self.save_checkpoint("latest", checkpoint())
+            self.set_state("interrupted", reason="operator interrupt")
+            raise
+
     def ensure_disk_space(self, minimum_bytes: int | None = None) -> None:
         """Fail before writing artifacts when the output volume is too full."""
 
@@ -334,6 +434,50 @@ class RunManager:
             required = int(cast(int, system_config["min_free_bytes"]))
         if shutil.disk_usage(self.run_dir).free < required:
             raise OSError(f"insufficient free disk space for run artifacts: {required}")
+
+    def retain_checkpoints(self) -> None:
+        """Keep named checkpoints and the newest configured periodic files."""
+
+        recording = cast(Mapping[str, object], self.config["recording"])
+        policy = cast(Mapping[str, object], recording["checkpoint_retention"])
+        periodic_limit = int(cast(int, policy.get("periodic", 3)))
+        if periodic_limit < 0:
+            raise ValueError("periodic checkpoint retention must be non-negative")
+        directory = self.run_dir / "checkpoints"
+        periodic = sorted(
+            directory.glob("periodic-*.json"),
+            key=lambda path: path.stat().st_mtime_ns,
+            reverse=True,
+        )
+        for path in periodic[periodic_limit:]:
+            path.unlink()
+
+    def retain_artifacts(self) -> None:
+        """Keep only the newest diagnostic snapshots under the run policy."""
+
+        recording = cast(Mapping[str, object], self.config["recording"])
+        policy = cast(Mapping[str, object], recording["artifact_retention"])
+        diagnostic_limit = int(cast(int, policy.get("diagnostics", 10)))
+        if diagnostic_limit < 0:
+            raise ValueError("diagnostic retention must be non-negative")
+        diagnostics = sorted(
+            self.run_dir.glob("diagnostics-*.json"),
+            key=lambda path: path.stat().st_mtime_ns,
+            reverse=True,
+        )
+        for path in diagnostics[diagnostic_limit:]:
+            path.unlink()
+
+    def save_diagnostics(self, buffer: DiagnosticRingBuffer, event: str) -> Path:
+        """Save a bounded diagnostic snapshot and enforce retention."""
+
+        if not event or Path(event).name != event:
+            raise ValueError("diagnostic event must be a simple filename")
+        self.ensure_disk_space()
+        path = self.run_dir / f"diagnostics-{event}.json"
+        buffer.save_event(path)
+        self.retain_artifacts()
+        return path
 
     def record_step(self, row: Mapping[str, object]) -> None:
         """Append one telemetry row without replacing raw history."""
@@ -365,6 +509,7 @@ class RunManager:
             loaded = json.load(handle)
         if loaded != checkpoint:
             raise OSError("checkpoint verification failed after save")
+        self.retain_checkpoints()
         return path
 
     def write_summary(self, metrics: Mapping[str, object]) -> None:

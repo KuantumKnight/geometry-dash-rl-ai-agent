@@ -13,7 +13,9 @@ while producing a compact snapshot; it never replaces raw episode telemetry.
 
 Rows should include `return`, `length`, `progress`, and `outcome`; optional
 `reset_failures` and other timing/checkpoint fields remain preserved by the
-run manager's append-only JSONL artifact. Real baseline confidence intervals
+run manager's append-only JSONL artifact. Step telemetry also preserves
+detector confidence/errors and missed-deadline timing when supplied by the
+environment loop. Real baseline confidence intervals
 require the predeclared multi-seed live episode collection and are not implied
 by the synthetic unit tests.
 

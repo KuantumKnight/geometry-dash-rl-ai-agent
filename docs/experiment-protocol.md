@@ -26,12 +26,24 @@ Run directories contain `metadata.json`, `resolved-config.json`, append-only
 and `report.md`. States are `created`, `running`, `interrupted`, `failed`,
 `completed`, and `evaluated`. Interruption preserves prior records; resuming
 requires the interrupted state and does not reset counters or overwrite raw
-metrics. Checkpoints are verified immediately after atomic save.
+metrics. Checkpoints are verified immediately after atomic save. The committed
+retention policy always keeps `best`, `latest`, and `final` checkpoints and the
+newest three `periodic-*.json` files. Diagnostic snapshots are bounded to the
+newest ten `diagnostics-*.json` files, and every artifact write checks the
+configured free-space floor.
+
+Per-step telemetry can include `detector_state`, `detector_confidence`,
+`detector_errors`, `missed_deadline`, and `deadline_lateness_seconds`.
+`RunFailureMonitor` classifies repeated reset, capture, detector, focus, and
+disk failures so a caller can stop the run at the predeclared consecutive
+failure limit. `RunManager.interruption_guard` saves a recoverable `latest`
+checkpoint and marks the run interrupted on `KeyboardInterrupt`.
 
 The repository implementation is offline-testable with:
 
 ```powershell
 uv run python -m unittest tests.test_experiment tests.test_baselines -v
+uv run python tools/run_baseline.py --unattended-dry-run --output artifacts/runs
 ```
 
 Live baseline episodes, confidence intervals, checkpoint selection evidence,

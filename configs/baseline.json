@@ -28,7 +28,13 @@
   },
   "recording": {
     "telemetry_interval": 1,
-    "save_frames": false
+    "save_frames": false,
+    "checkpoint_retention": {
+      "periodic": 3
+    },
+    "artifact_retention": {
+      "diagnostics": 10
+    }
   },
   "system": {
     "min_free_bytes": 100000000,

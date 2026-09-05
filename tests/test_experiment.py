@@ -13,8 +13,10 @@ from geometry_dash_env.experiment import (
     EXPERIMENT_PROTOCOL_VERSION,
     ConsecutiveFailureBudget,
     DiagnosticRingBuffer,
+    RunFailureMonitor,
     RunManager,
     config_hash,
+    detector_telemetry,
     heartbeat_line,
     load_config,
     resolve_config,
@@ -124,6 +126,77 @@ class ExperimentInfrastructureTests(unittest.TestCase):
         self.assertIn("progress=0.500", line)
         self.assertIn("speed=1.25/s", line)
         self.assertIn("eta=8.0s", line)
+
+    def test_detector_telemetry_validates_and_normalizes_fields(self) -> None:
+        telemetry = detector_telemetry(
+            state="gameplay",
+            confidence=0.8,
+            errors=("late-frame",),
+            missed_deadline=True,
+            deadline_lateness_seconds=0.012,
+        )
+        self.assertEqual(telemetry["detector_errors"], ["late-frame"])
+        self.assertTrue(telemetry["missed_deadline"])
+        with self.assertRaises(ValueError):
+            detector_telemetry(state="gameplay", confidence=1.1)
+        with self.assertRaises(ValueError):
+            detector_telemetry(state="gameplay", confidence=0.5, errors=("",))
+
+    def test_failure_monitor_categorizes_supported_failures(self) -> None:
+        monitor = RunFailureMonitor(limit=2)
+        self.assertFalse(monitor.record_failure("detector", "low confidence"))
+        self.assertTrue(monitor.record_failure("capture", "timeout"))
+        self.assertEqual(monitor.last_kind, "capture")
+        monitor.record_success()
+        self.assertEqual(monitor.budget.consecutive, 0)
+        with self.assertRaises(ValueError):
+            monitor.record_failure("other", "unsupported")  # type: ignore[arg-type]
+
+    def test_retention_keeps_named_checkpoints_and_recent_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            manager = RunManager.create(
+                Path(directory),
+                {
+                    "system": {"min_free_bytes": 1, "exploratory": True},
+                    "recording": {
+                        "checkpoint_retention": {"periodic": 3},
+                        "artifact_retention": {"diagnostics": 2},
+                    },
+                },
+            )
+            for name in (
+                "best",
+                "latest",
+                "final",
+                "periodic-001",
+                "periodic-002",
+                "periodic-003",
+                "periodic-004",
+            ):
+                manager.save_checkpoint(name, {"step": 1})
+            checkpoints = list((manager.run_dir / "checkpoints").glob("*.json"))
+            self.assertEqual(len(checkpoints), 6)
+            buffer = DiagnosticRingBuffer(capacity=1)
+            for event in ("one", "two", "three"):
+                manager.save_diagnostics(buffer, event)
+            self.assertEqual(len(list(manager.run_dir.glob("diagnostics-*.json"))), 2)
+
+    def test_interruption_guard_saves_latest_checkpoint_and_state(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            manager = RunManager.create(
+                Path(directory), {"system": {"min_free_bytes": 1, "exploratory": True}}
+            )
+            manager.set_state("running")
+            with (
+                self.assertRaises(KeyboardInterrupt),
+                manager.interruption_guard(lambda: {"step": 7}),
+            ):
+                raise KeyboardInterrupt
+            self.assertEqual(manager.state, "interrupted")
+            self.assertTrue((manager.run_dir / "checkpoints" / "latest.json").exists())
+            self.assertIn(
+                "operator interrupt", (manager.run_dir / "metadata.json").read_text()
+            )
 
     def test_only_interrupted_runs_can_resume(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
