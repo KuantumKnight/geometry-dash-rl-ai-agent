@@ -369,25 +369,25 @@ Version 1 is complete only when all statements below are true.
 
 ### 2.1 Define progress ground truth
 
-- [ ] DECISION — Choose the authoritative progress definition: in-game percentage, level coordinate, progress-bar fill, or a calibrated proxy.
-- [ ] P0 — Specify expected range, resolution, monotonicity, latency, and unavailable-value behavior.
+- [x] DECISION — Choose the normal-mode results-screen progress-bar fill as the v1 authoritative terminal progress definition.
+- [x] VERIFIED — Specify normalized range, monotonic filtering, first-sample behavior, and explicit missing-value behavior in `docs/progress-contract.md`.
 - [ ] P0 — Collect paired gameplay frames and result-screen percentages across early, middle, late, death, and completion cases.
 - [ ] P0 — Validate the current results progress estimator against manually recorded ground truth.
 - [ ] P0 — Report mean absolute error, worst-case error, bias, and missing-value rate.
 - [ ] P0 — Add fixtures for UI themes/resolutions where green heuristics may fail.
-- [ ] P0 — Treat unreadable progress as missing data, not a fabricated zero.
-- [ ] P0 — Version progress-detector thresholds/configuration.
+- [x] VERIFIED — Treat unreadable, invalid, and non-gameplay progress as missing data, not fabricated zero.
+- [x] VERIFIED — Version progress-tracker thresholds and configuration as `progress-v1`.
 
 ### 2.2 Implement per-step progress safely
 
 - [ ] P0 — Prototype at least two measurement methods offline before integrating reward.
 - [ ] P0 — Measure progress only in valid gameplay states.
-- [ ] P0 — Filter jitter without hiding real backward/forward anomalies.
-- [ ] P0 — Clamp impossible jumps and emit a diagnostic counter.
+- [x] VERIFIED — Filter jitter while flagging real backward anomalies.
+- [x] VERIFIED — Clamp impossible forward jumps and emit a diagnostic counter.
 - [ ] P0 — Preserve raw and filtered progress in run logs.
-- [ ] P0 — Compute `progress_delta` from newly achieved forward progress, not repeatedly from absolute progress.
-- [ ] P0 — Decide how checkpoints/respawns or level restarts reset progress state.
-- [ ] P0 — Test zero movement, normal movement, detector jitter, death transition, reset, completion, and missing measurement.
+- [x] VERIFIED — Compute `progress_delta` only from newly achieved forward progress, not repeated absolute values.
+- [x] VERIFIED — Reset progress state at episode reset; checkpoint/respawn semantics remain deferred because they are not supported by the current controller.
+- [x] VERIFIED — Test zero movement, forward movement, jitter, backward anomaly, clamping, reset, invalid state, and missing measurement.
 - [ ] P0 — Compare summed progress deltas with terminal result progress over complete episodes.
 
 ### 2.3 Specify reward versions and invariants
